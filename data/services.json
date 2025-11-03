@@ -1,0 +1,30 @@
+[
+  {
+    "id": "s1",
+    "name": "Dental Cleaning",
+    "description": "Professional cleaning to maintain oral health",
+    "duration": 60,
+    "price_range": "$120-$180",
+    "category": "General Dentistry",
+    "icon": "cleaning"
+  },
+  {
+    "id": "s2",
+    "name": "Teeth Whitening",
+    "description": "Advanced whitening treatment for a brighter smile",
+    "duration": 90,
+    "price_range": "$250-$400",
+    "category": "Cosmetic Dentistry",
+    "icon": "sparkles"
+  },
+  {
+    "id": "s3",
+    "name": "Invisalign",
+    "description": "Clear aligner therapy for teeth straightening",
+    "duration": 30,
+    "price_range": "$3500-$6000",
+    "category": "Orthodontics",
+    "icon": "smile"
+  }
+]
+

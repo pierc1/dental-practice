@@ -16,5 +16,6 @@ Available scripts
 Notes
 - Path alias `@` points to the project root, so imports like `@/utils` and `@/components/ui/button` resolve correctly.
 - A lightweight mock API is provided at `api/base44Client.js` to serve dentists, services, and accept appointment creations in localStorage.
+- Demo data lives in `data/` (`dentists.json`, `services.json`) and is consumed by `api/base44Client.js`.
 - UI primitives (`Button`, `Card`, `Select`, etc.) live under `components/ui/` and are minimal shadcn-like components for local use.
 - Pages are in `Pages/` and use JSX; do not rename back to `.js`.

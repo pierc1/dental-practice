@@ -1,0 +1,39 @@
+[
+  {
+    "id": "d1",
+    "full_name": "Dr. Emily Rodriguez",
+    "title": "DDS, MS",
+    "specialty": "Orthodontics",
+    "bio": "Dr. Rodriguez is a board-certified orthodontist specializing in Invisalign and traditional braces. She creates beautiful, healthy smiles.",
+    "photo_url": "",
+    "education": "Harvard School of Dental Medicine",
+    "years_experience": 10,
+    "available_days": ["Tuesday", "Wednesday", "Thursday", "Saturday"],
+    "available_hours": "9:00 AM - 5:00 PM"
+  },
+  {
+    "id": "d2",
+    "full_name": "Dr. Sarah Williams",
+    "title": "DDS",
+    "specialty": "Cosmetic Dentistry",
+    "bio": "Dr. Williams specializes in cosmetic dentistry with over 15 years of experience transforming smiles. She's passionate about helping patients feel confident.",
+    "photo_url": "",
+    "education": "Columbia University College of Dental Medicine",
+    "years_experience": 15,
+    "available_days": ["Monday", "Tuesday", "Wednesday", "Friday"],
+    "available_hours": "9:00 AM - 5:00 PM"
+  },
+  {
+    "id": "d3",
+    "full_name": "Dr. Michael Chen",
+    "title": "DMD",
+    "specialty": "General Dentistry",
+    "bio": "Dr. Chen provides comprehensive general dentistry services with a gentle touch. He believes in preventive care and patient education.",
+    "photo_url": "",
+    "education": "NYU College of Dentistry",
+    "years_experience": 12,
+    "available_days": ["Monday", "Wednesday", "Thursday", "Friday"],
+    "available_hours": "8:00 AM - 6:00 PM"
+  }
+]
+
