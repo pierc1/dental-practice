@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { ROUTES, CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
 import { Phone, Mail, MapPin, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -8,12 +9,8 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navigationItems = [
-    { name: "Home", url: createPageUrl("Home") },
-    { name: "Services", url: createPageUrl("Services") },
-    { name: "Our Team", url: createPageUrl("Team") },
-    { name: "Book Appointment", url: createPageUrl("BookAppointment") },
-  ];
+  const navigationItems = ROUTES;
+  const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
 
   const isActive = (url) => location.pathname === url;
 
@@ -23,18 +20,20 @@ export default function Layout({ children, currentPageName }) {
       <div className="bg-slate-900 text-white py-2 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-sm">
           <div className="flex items-center gap-6">
-            <a href="tel:+12125551234" className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
+            <a href={CONTACT_INFO.phone.href} className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
               <Phone className="w-4 h-4" />
-              <span>(212) 555-1234</span>
+              <span>{CONTACT_INFO.phone.display}</span>
             </a>
-            <a href="mailto:info@nycsmiles.com" className="hidden md:flex items-center gap-2 hover:text-cyan-400 transition-colors">
+            <a href={CONTACT_INFO.email.href} className="hidden md:flex items-center gap-2 hover:text-cyan-400 transition-colors">
               <Mail className="w-4 h-4" />
-              <span>info@nycsmiles.com</span>
+              <span>{CONTACT_INFO.email.display}</span>
             </a>
           </div>
           <div className="flex items-center gap-2 text-xs md:text-sm">
             <MapPin className="w-4 h-4" />
-            <span>123 Park Avenue, New York, NY 10016</span>
+            <span>
+              {CONTACT_INFO.address.line1}, {CONTACT_INFO.address.line2}
+            </span>
           </div>
         </div>
       </div>
@@ -58,21 +57,21 @@ export default function Layout({ children, currentPageName }) {
             <div className="hidden md:flex items-center gap-8">
               {navigationItems.map((item) => (
                 <Link
-                  key={item.name}
-                  to={item.url}
+                  key={item.id}
+                  to={item.path}
                   className={`text-sm font-medium transition-colors relative py-2 ${
-                    isActive(item.url)
+                    isActive(item.path)
                       ? "text-cyan-600"
                       : "text-slate-600 hover:text-cyan-600"
                   }`}
                 >
-                  {item.name}
-                  {isActive(item.url) && (
+                  {item.label}
+                  {isActive(item.path) && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-600"></span>
                   )}
                 </Link>
               ))}
-              <Link to={createPageUrl("BookAppointment")}>
+              <Link to={appointmentUrl}>
                 <Button className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-lg shadow-cyan-500/30">
                   Book Now
                 </Button>
@@ -99,19 +98,19 @@ export default function Layout({ children, currentPageName }) {
             <div className="px-4 py-4 space-y-3">
               {navigationItems.map((item) => (
                 <Link
-                  key={item.name}
-                  to={item.url}
+                  key={item.id}
+                  to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                    isActive(item.url)
+                    isActive(item.path)
                       ? "bg-cyan-50 text-cyan-600"
                       : "text-slate-600 hover:bg-slate-50"
                   }`}
                 >
-                  {item.name}
+                  {item.label}
                 </Link>
               ))}
-              <Link to={createPageUrl("BookAppointment")} onClick={() => setMobileMenuOpen(false)}>
+              <Link to={appointmentUrl} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white">
                   Book Appointment
                 </Button>
@@ -168,15 +167,19 @@ export default function Layout({ children, currentPageName }) {
               <ul className="space-y-3 text-sm text-slate-400">
                 <li className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
-                  <span>123 Park Avenue<br />New York, NY 10016</span>
+                  <span>
+                    {CONTACT_INFO.address.line1}
+                    <br />
+                    {CONTACT_INFO.address.line2}
+                  </span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Phone className="w-4 h-4 flex-shrink-0" />
-                  <a href="tel:+12125551234" className="hover:text-cyan-400 transition-colors">(212) 555-1234</a>
+                  <a href={CONTACT_INFO.phone.href} className="hover:text-cyan-400 transition-colors">{CONTACT_INFO.phone.display}</a>
                 </li>
                 <li className="flex items-center gap-2">
                   <Mail className="w-4 h-4 flex-shrink-0" />
-                  <a href="mailto:info@nycsmiles.com" className="hover:text-cyan-400 transition-colors">info@nycsmiles.com</a>
+                  <a href={CONTACT_INFO.email.href} className="hover:text-cyan-400 transition-colors">{CONTACT_INFO.email.display}</a>
                 </li>
               </ul>
             </div>

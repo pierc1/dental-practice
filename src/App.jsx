@@ -5,6 +5,7 @@ import Home from '../Pages/Home'
 import Services from '../Pages/Services'
 import Team from '../Pages/Team'
 import BookAppointment from '../Pages/BookAppointment'
+import { ROUTES } from '@/config/siteConfig'
 
 function withLayout(Component, currentPageName) {
   return (
@@ -15,14 +16,28 @@ function withLayout(Component, currentPageName) {
 }
 
 export default function App() {
+  const routeComponents = {
+    Home,
+    Services,
+    Team,
+    BookAppointment,
+  }
+
   return (
     <Routes>
-      <Route path="/" element={withLayout(Home, 'Home')} />
-      <Route path="/services" element={withLayout(Services, 'Services')} />
-      <Route path="/team" element={withLayout(Team, 'Team')} />
-      <Route path="/book-appointment" element={withLayout(BookAppointment, 'BookAppointment')} />
+      {ROUTES.map((route) => {
+        const Component = routeComponents[route.id]
+        if (!Component) return null
+
+        return (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={withLayout(Component, route.id)}
+          />
+        )
+      })}
       <Route path="*" element={withLayout(Home, 'Home')} />
     </Routes>
   )
 }
-

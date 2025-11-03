@@ -6,6 +6,8 @@ import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import CtaSection from "@/components/CtaSection";
+import { PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
 import { 
   Smile,
   Sparkles,
@@ -41,6 +43,8 @@ export default function Services() {
     acc[category].push(service);
     return acc;
   }, {});
+
+  const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
 
   return (
     <div className="bg-white">
@@ -156,23 +160,12 @@ export default function Services() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-cyan-500 to-cyan-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Not Sure Which Service You Need?
-          </h2>
-          <p className="text-xl text-cyan-50 mb-8">
-            Schedule a consultation and let our expert team guide you to the perfect treatment plan
-          </p>
-          <Link to={createPageUrl("BookAppointment")}>
-            <Button size="lg" className="bg-white text-cyan-600 hover:bg-cyan-50 shadow-xl">
-              Book Free Consultation
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <CtaSection
+        title="Not Sure Which Service You Need?"
+        description="Schedule a consultation and let our expert team guide you to the perfect treatment plan"
+        buttonText="Book Free Consultation"
+        to={appointmentUrl}
+      />
     </div>
   );
 }

@@ -1,11 +1,5 @@
-export const RoutesMap = {
-  Home: '/',
-  Services: '/services',
-  Team: '/team',
-  BookAppointment: '/book-appointment',
-}
+import { ROUTE_MAP } from '@/config/siteConfig'
 
 export function createPageUrl(name) {
-  return RoutesMap[name] ?? '/'
+  return ROUTE_MAP[name] ?? '/'
 }
-

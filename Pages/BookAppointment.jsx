@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { CONTACT_INFO } from "@/config/siteConfig";
 import { 
   Calendar,
   Clock,
@@ -420,7 +421,15 @@ export default function BookAppointment() {
           </Card>
 
           <div className="mt-8 text-center text-sm text-slate-600">
-            <p>Need immediate assistance? Call us at <a href="tel:+12125551234" className="text-cyan-600 hover:underline font-semibold">(212) 555-1234</a></p>
+          <p>
+            Need immediate assistance? Call us at{" "}
+            <a
+              href={CONTACT_INFO.phone.href}
+              className="text-cyan-600 hover:underline font-semibold"
+            >
+              {CONTACT_INFO.phone.display}
+            </a>
+          </p>
           </div>
         </motion.div>
       </div>

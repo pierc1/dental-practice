@@ -1,16 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Sparkles, 
-  Heart, 
-  Shield, 
+import { Skeleton } from "@/components/ui/skeleton";
+import { base44 } from "@/api/base44Client";
+import CtaSection from "@/components/CtaSection";
+import { CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
+import {
+  Sparkles,
+  Heart,
+  Shield,
   Award,
   Star,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -38,24 +43,6 @@ export default function Home() {
     }
   ];
 
-  const services = [
-    {
-      name: "General Dentistry",
-      description: "Preventive care and routine checkups",
-      image: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80"
-    },
-    {
-      name: "Cosmetic Dentistry",
-      description: "Transform your smile with veneers and whitening",
-      image: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80"
-    },
-    {
-      name: "Orthodontics",
-      description: "Invisalign and traditional braces",
-      image: "https://images.unsplash.com/photo-1609840114035-3c981960afdb?w=800&q=80"
-    }
-  ];
-
   const testimonials = [
     {
       name: "Sarah Johnson",
@@ -73,6 +60,17 @@ export default function Home() {
       rating: 5
     }
   ];
+
+  const { data: services = [], isLoading: servicesLoading } = useQuery({
+    queryKey: ["services"],
+    queryFn: () => base44.entities.Service.list(),
+    initialData: [],
+  });
+
+  const servicesPreview = services.slice(0, 3);
+  const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
+  const serviceImageFallback =
+    "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80";
 
   return (
     <div className="bg-white">
@@ -100,13 +98,13 @@ export default function Home() {
                 Experience world-class dental care in the heart of NYC. From routine cleanings to complete smile makeovers, we're dedicated to your oral health.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to={createPageUrl("BookAppointment")}>
+                <Link to={appointmentUrl}>
                   <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-xl shadow-cyan-500/30 text-lg px-8">
                     Book Appointment
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
-                <a href="tel:+12125551234">
+                <a href={CONTACT_INFO.phone.href}>
                   <Button size="lg" variant="outline" className="text-lg px-8 border-2 border-slate-200 hover:border-cyan-500 hover:text-cyan-600">
                     Call Us Now
                   </Button>
@@ -203,30 +201,48 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <motion.div
-                key={service.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="relative h-64 overflow-hidden">
-                    <img
-                      src={service.image}
-                      alt={service.name}
-                      className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <h3 className="text-2xl font-bold mb-2">{service.name}</h3>
-                      <p className="text-white/90">{service.description}</p>
-                    </div>
-                  </div>
+            {servicesLoading ? (
+              [1, 2, 3].map((placeholder) => (
+                <Card key={placeholder} className="overflow-hidden border-none shadow-xl">
+                  <Skeleton className="h-64 w-full" />
                 </Card>
-              </motion.div>
-            ))}
+              ))
+            ) : servicesPreview.length > 0 ? (
+              servicesPreview.map((service, index) => (
+                <motion.div
+                  key={service.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 h-full">
+                    <div className="relative h-64 overflow-hidden">
+                      <img
+                        src={service.image_url || serviceImageFallback}
+                        alt={service.name}
+                        className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        <h3 className="text-2xl font-bold mb-2">{service.name}</h3>
+                        <p className="text-white/90">{service.description}</p>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))
+            ) : (
+              <Card className="overflow-hidden border-none shadow-xl col-span-full">
+                <CardContent className="p-8 text-center text-slate-600">
+                  Our team is updating service highlights. Explore all offerings on the{" "}
+                  <Link to={createPageUrl("Services")} className="text-cyan-600 font-semibold hover:underline">
+                    services page
+                  </Link>
+                  .
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="text-center mt-12">
@@ -274,23 +290,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-cyan-500 to-cyan-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Transform Your Smile?
-          </h2>
-          <p className="text-xl text-cyan-50 mb-8">
-            Schedule your appointment today and experience the NYC Smiles difference
-          </p>
-          <Link to={createPageUrl("BookAppointment")}>
-            <Button size="lg" className="bg-white text-cyan-600 hover:bg-cyan-50 text-lg px-10 shadow-xl">
-              Book Your Appointment
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <CtaSection
+        title="Ready to Transform Your Smile?"
+        description="Schedule your appointment today and experience the NYC Smiles difference"
+        buttonText="Book Your Appointment"
+        to={appointmentUrl}
+        buttonClassName="text-lg px-10"
+      />
     </div>
   );
 }

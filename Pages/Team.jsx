@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import CtaSection from "@/components/CtaSection";
+import { CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
 import { 
   GraduationCap,
   Award,
@@ -21,6 +23,8 @@ export default function Team() {
     queryFn: () => base44.entities.Dentist.list(),
     initialData: []
   });
+
+  const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
 
   return (
     <div className="bg-white">
@@ -67,7 +71,7 @@ export default function Team() {
               <p className="text-slate-600 mb-8">
                 We're currently updating our team profiles. Please check back soon or call us to learn more about our dentists.
               </p>
-              <a href="tel:+12125551234">
+              <a href={CONTACT_INFO.phone.href}>
                 <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white">
                   Call to Learn More
                 </Button>
@@ -156,7 +160,7 @@ export default function Team() {
                         )}
                       </div>
 
-                      <Link to={createPageUrl("BookAppointment")}>
+                      <Link to={appointmentUrl}>
                         <Button className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white">
                           Book with Dr. {dentist.full_name.split(" ").pop()}
                           <ArrowRight className="ml-2 w-4 h-4" />
@@ -171,23 +175,12 @@ export default function Team() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-cyan-500 to-cyan-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Meet Your New Dentist?
-          </h2>
-          <p className="text-xl text-cyan-50 mb-8">
-            Schedule an appointment with one of our experienced professionals today
-          </p>
-          <Link to={createPageUrl("BookAppointment")}>
-            <Button size="lg" className="bg-white text-cyan-600 hover:bg-cyan-50 shadow-xl">
-              Book Your Appointment
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <CtaSection
+        title="Ready to Meet Your New Dentist?"
+        description="Schedule an appointment with one of our experienced professionals today"
+        buttonText="Book Your Appointment"
+        to={appointmentUrl}
+      />
     </div>
   );
 }
