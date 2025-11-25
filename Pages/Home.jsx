@@ -10,57 +10,18 @@ import CtaSection from "@/components/CtaSection";
 import { CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
 import {
   Sparkles,
-  Heart,
   Shield,
   Award,
   Star,
   ArrowRight,
+  Clock,
+  MapPin,
+  Wand2,
   CheckCircle2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Home() {
-  const features = [
-    {
-      icon: Sparkles,
-      title: "Advanced Technology",
-      description: "State-of-the-art equipment for precise, comfortable treatments"
-    },
-    {
-      icon: Heart,
-      title: "Patient-Centered Care",
-      description: "Personalized treatment plans tailored to your unique needs"
-    },
-    {
-      icon: Shield,
-      title: "Insurance Accepted",
-      description: "We work with most major insurance providers"
-    },
-    {
-      icon: Award,
-      title: "Expert Team",
-      description: "Board-certified dentists with decades of combined experience"
-    }
-  ];
-
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      text: "Best dental experience I've ever had. The team is professional, gentle, and truly cares about their patients.",
-      rating: 5
-    },
-    {
-      name: "Michael Chen",
-      text: "My smile transformation exceeded my expectations. Dr. Williams is an artist!",
-      rating: 5
-    },
-    {
-      name: "Emily Rodriguez",
-      text: "Finally found a dentist I trust. The office is modern and the staff is wonderful.",
-      rating: 5
-    }
-  ];
-
   const { data: services = [], isLoading: servicesLoading } = useQuery({
     queryKey: ["services"],
     queryFn: () => base44.entities.Service.list(),
@@ -71,136 +32,156 @@ export default function Home() {
   const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
   const serviceImageFallback =
     "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80";
+  const heroPhoto =
+    "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=1400&q=80";
+
+  const trustPoints = [
+    { title: "Safety guarantee", body: "Precision sterilization, medical-grade filtration, and transparent protocols for every visit." },
+    { title: "Comfort-first", body: "Noise-canceling headphones, aromatherapy, warm towels, and gentle, patient-led pacing." },
+    { title: "Advanced tech", body: "3D scanning, digital smile design, and minimally invasive techniques that protect healthy enamel." },
+  ];
+
+  const experiences = [
+    { icon: Sparkles, title: "Minimal wait", text: "Concierge check-in with appointments that run on time." },
+    { icon: Shield, title: "Insurance-friendly", text: "We work with major providers and keep billing crystal clear." },
+    { icon: Award, title: "NYC-renowned team", text: "Board-certified clinicians with a portfolio of aesthetic wins." },
+  ];
+
+  const testimonials = [
+    {
+      name: "Sarah Johnson",
+      text: "Best dental experience I've ever had. The team is professional, gentle, and truly cares about their patients.",
+      rating: 5,
+    },
+    {
+      name: "Michael Chen",
+      text: "My smile transformation exceeded my expectations. Dr. Williams is an artist!",
+      rating: 5,
+    },
+    {
+      name: "Emily Rodriguez",
+      text: "Finally found a dentist I trust. The office is modern and the staff is wonderful.",
+      rating: 5,
+    },
+  ];
 
   return (
-    <div className="bg-white">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-slate-50 to-cyan-50 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSIjMDZCNkQ0IiBzdHJva2Utb3BhY2l0eT0iLjA1IiBzdHJva2Utd2lkdGg9IjIiLz48L2c+PC9zdmc+')] opacity-40"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 relative">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="inline-block mb-4">
-                <span className="bg-cyan-100 text-cyan-700 text-sm font-medium px-4 py-2 rounded-full">
-                  Manhattan's Premier Dental Practice
-                </span>
+    <div className="bg-transparent">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-slate-950 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.18),transparent_32%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(56,189,248,0.15),transparent_32%)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black opacity-90" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-24 md:pt-32 pb-20 md:pb-28">
+          <div className="grid md:grid-cols-2 gap-10 lg:gap-14 items-center">
+            <div className="space-y-6">
+              <div className="text-sm uppercase tracking-[0.28em] text-cyan-200 font-semibold">
+                NYC Smiles
               </div>
-              <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-                Your Perfect
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-cyan-700"> Smile</span> Starts Here
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl font-semibold leading-tight">
+                Because your smile
+                <br />
+                deserves the{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-cyan-200">
+                  Best
+                </span>
               </h1>
-              <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-                Experience world-class dental care in the heart of NYC. From routine cleanings to complete smile makeovers, we're dedicated to your oral health.
+              <p className="text-lg text-slate-200 max-w-xl">
+                A modern, technology-led dental studio delivering safe, aesthetic results with concierge-level care.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap items-center gap-3">
                 <Link to={appointmentUrl}>
-                  <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-xl shadow-cyan-500/30 text-lg px-8">
-                    Book Appointment
-                    <ArrowRight className="ml-2 w-5 h-5" />
+                  <Button className="rounded-full bg-white text-slate-900 hover:bg-cyan-50 px-8 h-12 text-base shadow-lg shadow-cyan-500/20">
+                    Consultation
+                    <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
-                <a href={CONTACT_INFO.phone.href}>
-                  <Button size="lg" variant="outline" className="text-lg px-8 border-2 border-slate-200 hover:border-cyan-500 hover:text-cyan-600">
-                    Call Us Now
+                <Link to={createPageUrl("Services")}>
+                  <Button variant="outline" className="rounded-full border-white/30 text-white hover:border-cyan-300 hover:text-cyan-100 px-6 h-12 text-base">
+                    View services
                   </Button>
+                </Link>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 text-sm text-slate-200 pt-2">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-cyan-200" />
+                  <span className="font-semibold text-white">Mon – Sat 8:00 – 20:00</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-cyan-200" />
+                  <span className="font-semibold text-white">123 Park Avenue, New York</span>
+                </div>
+                <a href={CONTACT_INFO.phone.href} className="text-cyan-200 hover:text-white transition-colors">
+                  {CONTACT_INFO.phone.display}
                 </a>
               </div>
-              <div className="flex items-center gap-6 mt-8 pt-8 border-t border-slate-200">
-                <div>
-                  <div className="text-3xl font-bold text-slate-900">15+</div>
-                  <div className="text-sm text-slate-600">Years Experience</div>
-                </div>
-                <div className="w-px h-12 bg-slate-200"></div>
-                <div>
-                  <div className="text-3xl font-bold text-slate-900">5,000+</div>
-                  <div className="text-sm text-slate-600">Happy Patients</div>
-                </div>
-                <div className="w-px h-12 bg-slate-200"></div>
-                <div>
-                  <div className="flex items-center gap-1 mb-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <div className="text-sm text-slate-600">5-Star Rated</div>
-                </div>
-              </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-3xl transform rotate-3"></div>
+            <div className="relative rounded-[32px] overflow-hidden shadow-2xl border border-white/10">
+              <div className="absolute inset-0 bg-gradient-to-l from-black/35 via-black/10 to-transparent" />
               <img
-                src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&q=80"
-                alt="Modern dental office"
-                className="relative rounded-3xl shadow-2xl w-full h-[500px] object-cover"
+                src={heroPhoto}
+                alt="Modern dental studio"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-slate-900">Same-Day Appointments</div>
-                    <div className="text-sm text-slate-600">Available Now</div>
-                  </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="bg-slate-950 text-white py-20 md:py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12">
+            <div>
+              <p className="text-sm uppercase tracking-[0.24em] text-cyan-200 font-semibold mb-4">
+                Why patients trust us
+              </p>
+              <h2 className="text-4xl md:text-5xl font-semibold leading-tight mb-6">
+                Safety, comfort,
+                <br />
+                and results
+              </h2>
+              <p className="text-lg text-slate-200 max-w-2xl">
+                We blend meticulous clinical protocols with a calm, crafted environment—so every visit feels intentional and elevated.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {trustPoints.map((point) => (
+                <div key={point.title} className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 shadow-lg shadow-cyan-900/20">
+                  <h3 className="text-lg font-semibold mb-2">{point.title}</h3>
+                  <p className="text-sm text-slate-200 leading-relaxed">{point.body}</p>
                 </div>
-              </div>
-            </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">Why Choose NYC Smiles?</h2>
-            <p className="text-xl text-slate-600">Experience the difference of exceptional dental care</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className="border-none shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
-                  <CardContent className="p-6">
-                    <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-cyan-500/30">
-                      <feature.icon className="w-7 h-7 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">{feature.title}</h3>
-                    <p className="text-slate-600">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+      {/* Signature Services */}
+      <section className="relative overflow-hidden py-18 md:py-20 bg-gradient-to-br from-slate-50 via-white to-cyan-50">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -right-32 -bottom-20 w-96 h-96 bg-cyan-100 blur-3xl" />
         </div>
-      </section>
-
-      {/* Services Preview */}
-      <section className="py-20 bg-gradient-to-br from-slate-50 to-cyan-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">Our Services</h2>
-            <p className="text-xl text-slate-600">Comprehensive dental care for every need</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-cyan-700 font-semibold mb-3">Signature services</p>
+              <h2 className="text-4xl font-semibold text-slate-900">Tailored treatments for every smile</h2>
+              <p className="text-lg text-slate-600 mt-2 max-w-2xl">
+                Explore a curated selection of our most-loved services—crafted for comfort and results.
+              </p>
+            </div>
+            <Link to={createPageUrl("Services")}>
+              <Button variant="outline" className="rounded-full border-2 border-cyan-500 text-cyan-700 hover:bg-cyan-500 hover:text-white px-6">
+                View all services
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             {servicesLoading ? (
               [1, 2, 3].map((placeholder) => (
                 <Card key={placeholder} className="overflow-hidden border-none shadow-xl">
@@ -211,24 +192,37 @@ export default function Home() {
               servicesPreview.map((service, index) => (
                 <motion.div
                   key={service.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 18 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  transition={{ duration: 0.45, delay: index * 0.08 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 h-full">
+                  <Card className="overflow-hidden border border-slate-100 bg-white/85 backdrop-blur hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 h-full">
                     <div className="relative h-64 overflow-hidden">
                       <img
                         src={service.image_url || serviceImageFallback}
                         alt={service.name}
-                        className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                        <h3 className="text-2xl font-bold mb-2">{service.name}</h3>
-                        <p className="text-white/90">{service.description}</p>
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/30 to-transparent" />
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-cyan-700 text-xs font-semibold px-3 py-1 rounded-full border border-white/60">
+                        {service.category || "Dental Care"}
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white space-y-2">
+                        <h3 className="text-2xl font-semibold">{service.name}</h3>
+                        <p className="text-white/90 line-clamp-2">{service.description}</p>
                       </div>
                     </div>
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between">
+                        <Link to={createPageUrl("BookAppointment")}>
+                          <Button variant="outline" className="rounded-full border-cyan-500 text-cyan-700 hover:bg-cyan-500 hover:text-white">
+                            Book this service
+                          </Button>
+                        </Link>
+                        <ArrowRight className="w-5 h-5 text-slate-400" />
+                      </div>
+                    </CardContent>
                   </Card>
                 </motion.div>
               ))
@@ -244,14 +238,31 @@ export default function Home() {
               </Card>
             )}
           </div>
+        </div>
+      </section>
 
-          <div className="text-center mt-12">
-            <Link to={createPageUrl("Services")}>
-              <Button size="lg" variant="outline" className="border-2 border-cyan-500 text-cyan-600 hover:bg-cyan-500 hover:text-white">
-                View All Services
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
+      {/* Experience */}
+      <section className="py-16 md:py-20 bg-slate-950 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-cyan-200 font-semibold mb-3">Experience</p>
+              <h2 className="text-4xl font-semibold leading-tight">Dentistry that feels like a private studio</h2>
+            </div>
+            <a href={CONTACT_INFO.phone.href} className="text-cyan-200 hover:text-white transition-colors">
+              {CONTACT_INFO.phone.display}
+            </a>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {experiences.map((item) => (
+              <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-6 shadow-lg shadow-cyan-900/20">
+                <div className="w-12 h-12 rounded-full bg-white/10 border border-white/10 flex items-center justify-center mb-4">
+                  <item.icon className="w-6 h-6 text-cyan-200" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-200 leading-relaxed">{item.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -259,28 +270,31 @@ export default function Home() {
       {/* Testimonials */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">What Our Patients Say</h2>
-            <p className="text-xl text-slate-600">Real stories from real patients</p>
+          <div className="text-center mb-14">
+            <p className="text-sm uppercase tracking-[0.25em] text-cyan-600 font-semibold mb-3">Patient Love</p>
+            <h2 className="text-4xl font-semibold text-slate-900">Stories that make us smile</h2>
+            <p className="text-lg text-slate-600 mt-3">Real voices from New Yorkers who chose us for their care.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             {testimonials.map((testimonial, index) => (
               <motion.div
                 key={testimonial.name}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.45, delay: index * 0.08 }}
                 viewport={{ once: true }}
               >
-                <Card className="border-none shadow-lg h-full">
-                  <CardContent className="p-8">
+                <Card className="border border-slate-100 bg-white/90 backdrop-blur shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
+                  <CardContent className="p-7 flex flex-col h-full">
                     <div className="flex items-center gap-1 mb-4">
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       ))}
                     </div>
-                    <p className="text-slate-700 mb-6 text-lg italic">"{testimonial.text}"</p>
+                    <p className="text-slate-700 mb-6 text-lg leading-relaxed flex-1">
+                      “{testimonial.text}”
+                    </p>
                     <div className="font-semibold text-slate-900">{testimonial.name}</div>
                   </CardContent>
                 </Card>
@@ -291,9 +305,9 @@ export default function Home() {
       </section>
 
       <CtaSection
-        title="Ready to Transform Your Smile?"
-        description="Schedule your appointment today and experience the NYC Smiles difference"
-        buttonText="Book Your Appointment"
+        title="Ready to transform your smile?"
+        description="Schedule your appointment today and experience the NYC Smiles difference."
+        buttonText="Book your appointment"
         to={appointmentUrl}
         buttonClassName="text-lg px-10"
       />
