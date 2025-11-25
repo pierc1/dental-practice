@@ -29,18 +29,25 @@ export default function Team() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-slate-50 to-cyan-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative overflow-hidden py-20">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 via-white to-sky-50" />
+        <div className="absolute -left-24 -top-24 w-[420px] h-[420px] bg-cyan-200/50 blur-3xl rounded-full" />
+        <div className="absolute right-0 bottom-0 w-[420px] h-[420px] bg-blue-200/40 blur-3xl rounded-full" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
-              Meet Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-cyan-700">Expert Team</span>
+            <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-slate-100 shadow-glow-cyan mb-5">
+              <Award className="w-4 h-4 text-cyan-600" />
+              <span className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Award-Winning Dentists</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-semibold text-slate-900 mb-6">
+              Meet our <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-700">expert team</span>
             </h1>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
-              Our board-certified dentists bring decades of experience and a passion for creating beautiful, healthy smiles.
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8 leading-relaxed">
+              Board-certified clinicians, advanced training, and a shared obsession with comfortable, beautiful outcomes.
             </p>
           </motion.div>
         </div>
@@ -87,7 +94,7 @@ export default function Team() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden h-full">
+                  <Card className="border border-slate-100 bg-white/85 backdrop-blur hover:-translate-y-1 transition-all duration-300 shadow-md hover:shadow-2xl overflow-hidden h-full">
                     <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-100 to-cyan-100">
                       {dentist.photo_url ? (
                         <img
@@ -104,15 +111,15 @@ export default function Team() {
                           </div>
                         </div>
                       )}
-                      <div className="absolute top-4 right-4">
-                        <Badge className="bg-white text-cyan-600 shadow-lg">
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-white/90 text-cyan-700 shadow-lg border border-white">
                           {dentist.specialty}
                         </Badge>
                       </div>
                     </div>
 
                     <CardContent className="p-6">
-                      <h3 className="text-2xl font-bold text-slate-900 mb-1">
+                      <h3 className="text-2xl font-semibold text-slate-900 mb-1">
                         {dentist.full_name}
                       </h3>
                       {dentist.title && (
@@ -120,7 +127,7 @@ export default function Team() {
                       )}
 
                       {dentist.bio && (
-                        <p className="text-slate-600 mb-6 line-clamp-3">{dentist.bio}</p>
+                        <p className="text-slate-600 mb-6 line-clamp-3 leading-relaxed">{dentist.bio}</p>
                       )}
 
                       <div className="space-y-3 mb-6">
@@ -161,7 +168,7 @@ export default function Team() {
                       </div>
 
                       <Link to={appointmentUrl}>
-                        <Button className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white">
+                        <Button className="w-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white">
                           Book with Dr. {dentist.full_name.split(" ").pop()}
                           <ArrowRight className="ml-2 w-4 h-4" />
                         </Button>

@@ -28,7 +28,21 @@ export default {
         "glow-cyan": "0 10px 25px -15px rgba(14, 165, 233, 0.45)",
       },
     },
+    fontFamily: {
+      sans: [
+        "Sora",
+        "Space Grotesk",
+        "system-ui",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        '"Segoe UI"',
+        "Roboto",
+        '"Helvetica Neue"',
+        "Arial",
+        '"Noto Sans"',
+        "sans-serif",
+      ],
+    },
   },
   plugins: [],
 };
-

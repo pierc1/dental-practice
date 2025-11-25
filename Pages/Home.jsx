@@ -16,8 +16,6 @@ import {
   ArrowRight,
   Clock,
   MapPin,
-  Wand2,
-  CheckCircle2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -68,23 +66,24 @@ export default function Home() {
   return (
     <div className="bg-transparent">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-950 text-white">
+      <section className="relative overflow-hidden bg-slate-950 text-white min-h-[80vh]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.18),transparent_32%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(56,189,248,0.15),transparent_32%)]" />
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black opacity-90" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-24 md:pt-32 pb-20 md:pb-28">
-          <div className="grid md:grid-cols-2 gap-10 lg:gap-14 items-center">
-            <div className="space-y-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-28 md:pt-36 pb-20 md:pb-28">
+          <div className="grid lg:grid-cols-[0.9fr_1.1fr] md:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="space-y-7">
               <div className="text-sm uppercase tracking-[0.28em] text-cyan-200 font-semibold">
                 NYC Smiles
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl font-semibold leading-tight">
-                Because your smile
-                <br />
-                deserves the{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-cyan-200">
-                  Best
+                <span className="block">Because your smile</span>
+                <span className="block">
+                  deserves the{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-cyan-200">
+                    best
+                  </span>
                 </span>
               </h1>
               <p className="text-lg text-slate-200 max-w-xl">
@@ -92,7 +91,7 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <Link to={appointmentUrl}>
-                  <Button className="rounded-full bg-white text-slate-900 hover:bg-cyan-50 px-8 h-12 text-base shadow-lg shadow-cyan-500/20">
+                  <Button className="rounded-full px-8 h-12 text-base shadow-lg shadow-cyan-500/20">
                     Consultation
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
@@ -118,36 +117,38 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative rounded-[32px] overflow-hidden shadow-2xl border border-white/10">
-              <div className="absolute inset-0 bg-gradient-to-l from-black/35 via-black/10 to-transparent" />
+            <div className="relative rounded-[28px] overflow-hidden shadow-2xl border border-white/10 min-h-[520px] w-full">
               <img
                 src={heroPhoto}
                 alt="Modern dental studio"
                 className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 bg-gradient-to-l from-slate-900/35 via-slate-900/10 to-transparent" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Trust Section */}
-      <section className="bg-slate-950 text-white py-20 md:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-cyan-200 font-semibold mb-4">
+      <section className="relative overflow-hidden bg-slate-900 text-white py-20 md:py-24 border-t border-slate-800">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(56,189,248,0.15),transparent_35%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(14,165,233,0.12),transparent_32%)]" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            <div className="space-y-4">
+              <p className="text-sm uppercase tracking-[0.24em] text-cyan-200 font-semibold">
                 Why patients trust us
               </p>
-              <h2 className="text-4xl md:text-5xl font-semibold leading-tight mb-6">
+              <h2 className="text-4xl md:text-5xl font-semibold leading-tight">
                 Safety, comfort,
                 <br />
                 and results
               </h2>
-              <p className="text-lg text-slate-200 max-w-2xl">
+              <p className="text-lg text-slate-200 max-w-xl">
                 We blend meticulous clinical protocols with a calm, crafted environment—so every visit feels intentional and elevated.
               </p>
             </div>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="space-y-4">
               {trustPoints.map((point) => (
                 <div key={point.title} className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 shadow-lg shadow-cyan-900/20">
                   <h3 className="text-lg font-semibold mb-2">{point.title}</h3>

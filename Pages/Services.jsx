@@ -49,22 +49,29 @@ export default function Services() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-slate-50 to-cyan-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative overflow-hidden py-20">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 via-white to-sky-50" />
+        <div className="absolute -left-24 -top-24 w-[420px] h-[420px] bg-cyan-200/50 blur-3xl rounded-full" />
+        <div className="absolute right-0 bottom-0 w-[420px] h-[420px] bg-blue-200/40 blur-3xl rounded-full" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
-              Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-cyan-700">Services</span>
+            <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-slate-100 shadow-glow-cyan mb-5">
+              <Sparkles className="w-4 h-4 text-cyan-600" />
+              <span className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Comprehensive Care</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-semibold text-slate-900 mb-6">
+              Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-700">signature services</span>
             </h1>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
-              Comprehensive dental care tailored to your unique needs. From preventive care to advanced treatments, we've got you covered.
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
+              Preventive, restorative, and cosmetic dentistry crafted to your smile goals—with concierge-level comfort at every visit.
             </p>
             <Link to={createPageUrl("BookAppointment")}>
-              <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-xl shadow-cyan-500/30">
-                Schedule Consultation
+              <Button size="lg" className="rounded-full bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-700 text-white shadow-xl shadow-cyan-500/30 px-8">
+                Schedule consultation
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
@@ -120,14 +127,20 @@ export default function Services() {
                           transition={{ duration: 0.5, delay: serviceIndex * 0.1 }}
                           viewport={{ once: true }}
                         >
-                          <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 h-full">
-                            <CardHeader>
-                              <CardTitle className="text-xl text-slate-900">{service.name}</CardTitle>
+                          <Card className="border border-slate-100 bg-white/85 backdrop-blur hover:-translate-y-1 transition-all duration-300 shadow-md hover:shadow-2xl h-full overflow-hidden">
+                            <div className="h-1 w-full bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-700" />
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-xl text-slate-900 flex items-start justify-between gap-3">
+                                <span>{service.name}</span>
+                                <span className="text-xs font-semibold text-cyan-700 bg-cyan-50 border border-cyan-100 px-3 py-1 rounded-full">
+                                  {category}
+                                </span>
+                              </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                              <p className="text-slate-600">{service.description}</p>
+                            <CardContent className="space-y-5">
+                              <p className="text-slate-600 leading-relaxed">{service.description}</p>
                               
-                              <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
+                              <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
                                 {service.duration && (
                                   <div className="flex items-center gap-2 text-sm text-slate-600">
                                     <Clock className="w-4 h-4 text-cyan-600" />
@@ -143,8 +156,8 @@ export default function Services() {
                               </div>
 
                               <Link to={createPageUrl("BookAppointment")}>
-                                <Button variant="outline" className="w-full border-cyan-500 text-cyan-600 hover:bg-cyan-500 hover:text-white">
-                                  Book This Service
+                                <Button variant="outline" className="w-full rounded-full border-cyan-500 text-cyan-700 hover:bg-cyan-500 hover:text-white">
+                                  Book this service
                                 </Button>
                               </Link>
                             </CardContent>

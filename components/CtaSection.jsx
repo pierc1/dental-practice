@@ -14,26 +14,30 @@ export default function CtaSection({
   children,
 }) {
   return (
-    <section className={`py-20 bg-gradient-to-r from-cyan-500 to-cyan-600 ${className}`}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-          {title}
-        </h2>
-        <p className="text-xl text-cyan-50 mb-8">{description}</p>
-        <Link to={to}>
-          <Button
-            size="lg"
-            className={`bg-white text-cyan-600 hover:bg-cyan-50 shadow-xl ${buttonClassName}`}
-          >
-            {buttonText}
-            {ButtonIcon && (
-              <ButtonIcon className="ml-2 w-5 h-5" />
-            )}
-          </Button>
-        </Link>
-        {children}
+    <section className={`relative py-20 overflow-hidden ${className}`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-700" />
+      <div className="absolute -right-10 -bottom-24 w-72 h-72 bg-white/20 blur-3xl rounded-full" />
+      <div className="absolute -left-16 -top-24 w-72 h-72 bg-cyan-300/30 blur-3xl rounded-full" />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="rounded-3xl bg-white/10 border border-white/20 backdrop-blur-xl shadow-2xl p-10 md:p-14 text-center">
+          <h2 className="text-4xl md:text-5xl font-semibold text-white mb-6 leading-tight">
+            {title}
+          </h2>
+          <p className="text-xl text-cyan-50/90 mb-10 leading-relaxed">{description}</p>
+          <Link to={to}>
+            <Button
+              size="lg"
+              className={`rounded-full bg-white text-cyan-700 hover:bg-cyan-50 shadow-xl shadow-cyan-800/20 px-8 ${buttonClassName}`}
+            >
+              {buttonText}
+              {ButtonIcon && (
+                <ButtonIcon className="ml-2 w-5 h-5" />
+              )}
+            </Button>
+          </Link>
+          {children}
+        </div>
       </div>
     </section>
   );
 }
-
