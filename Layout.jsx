@@ -22,15 +22,15 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Top Bar */}
-      <div className="relative z-20 bg-gradient-to-r from-cyan-600 via-sky-700 to-blue-900 text-white py-2 px-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-sm">
+      <div className="relative z-20 bg-transparent backdrop-blur-sm text-white py-2 px-4 drop-shadow-[0_6px_14px_rgba(0,0,0,0.45)]">
+        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-sm text-black/85">
           <div className="flex items-center gap-4">
-            <span className="px-3 py-1 rounded-full bg-white/15 border border-white/20 text-xs uppercase tracking-wide">New Patients Welcome</span>
-            <a href={CONTACT_INFO.phone.href} className="flex items-center gap-2 hover:text-cyan-100 transition-colors">
+            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs uppercase tracking-wide">New Patients Welcome</span>
+            <a href={CONTACT_INFO.phone.href} className="flex items-center gap-2 hover:text-white transition-colors">
               <Phone className="w-4 h-4" />
               <span>{CONTACT_INFO.phone.display}</span>
             </a>
-            <a href={CONTACT_INFO.email.href} className="hidden md:flex items-center gap-2 hover:text-cyan-100 transition-colors">
+            <a href={CONTACT_INFO.email.href} className="hidden md:flex items-center gap-2 hover:text-white transition-colors">
               <Mail className="w-4 h-4" />
               <span>{CONTACT_INFO.email.display}</span>
             </a>
@@ -45,20 +45,17 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Main Navigation */}
-      <nav className="bg-white/80 backdrop-blur-xl border-b border-white/60 sticky top-0 z-30 shadow-sm">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -right-10 -bottom-20 w-64 h-64 bg-cyan-100 rounded-full blur-3xl opacity-70"></div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <nav className="absolute top-14 left-0 right-0 z-30 bg-transparent backdrop-blur-md px-4">
+        <div className="max-w-7xl mx-auto px-0 sm:px-2 lg:px-4 relative">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link to={createPageUrl("Home")} className="flex items-center gap-3 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-cyan-500/30 transition-transform group-hover:scale-105">
-                <span className="text-2xl text-white font-bold">S</span>
+              <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center shadow-xl shadow-black/20 transition-transform group-hover:scale-105">
+                <span className="text-2xl text-white font-bold tracking-tight">S</span>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-slate-900 group-hover:text-slate-800">NYC Smiles</h1>
-                <p className="text-xs text-slate-500">Premium Dental Care</p>
+                <h1 className="text-xl font-semibold text-white group-hover:text-white">NYC Smiles</h1>
+                <p className="text-xs text-white/60">Premium Dental Care</p>
               </div>
             </Link>
 
@@ -68,20 +65,23 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.id}
                   to={item.path}
-                  className={`text-sm font-medium transition-all relative px-4 py-2 rounded-full ${
-                    isActive(item.path)
-                      ? "text-slate-900 bg-slate-100 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  className={`group relative px-3 py-2 text-sm font-semibold uppercase tracking-[0.08em] transition-colors drop-shadow-[0_4px_10px_rgba(0,0,0,0.45)] ${
+                    isActive(item.path) ? "text-white" : "text-white/75 hover:text-white"
                   }`}
                 >
-                  {item.label}
-                  {isActive(item.path) && (
-                    <span className="absolute inset-x-4 -bottom-1 h-px bg-gradient-to-r from-cyan-500 to-blue-600"></span>
-                  )}
+                  <span
+                    className={`inline-block pb-1 border-b ${
+                      isActive(item.path)
+                        ? "border-white"
+                        : "border-white/30 group-hover:border-white/70"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
                 </Link>
               ))}
               <Link to={appointmentUrl}>
-                <Button className="rounded-full bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-700 hover:shadow-glow-cyan text-white shadow-lg border border-white/40 px-6">
+                <Button className="rounded-full border border-white/80 text-white bg-transparent hover:bg-white/10 hover:text-white px-5 h-11 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
                   Book Now
                 </Button>
               </Link>
@@ -89,13 +89,13 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 rounded-xl border border-slate-200 bg-white/70 backdrop-blur"
+              className="md:hidden p-2 rounded-xl border border-white/20 bg-white/10 backdrop-blur text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6 text-slate-900" />
+                <X className="w-6 h-6" />
               ) : (
-                <Menu className="w-6 h-6 text-slate-900" />
+                <Menu className="w-6 h-6" />
               )}
             </button>
           </div>
@@ -103,24 +103,30 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white/90 backdrop-blur-xl border-t border-gray-100 shadow-2xl">
-            <div className="px-4 py-4 space-y-3">
+          <div className="md:hidden bg-slate-950/90 backdrop-blur-xl border-t border-white/10 shadow-2xl">
+            <div className="px-4 py-4 space-y-3 text-white">
               {navigationItems.map((item) => (
                 <Link
                   key={item.id}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
-                    isActive(item.path)
-                      ? "bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700"
-                      : "text-slate-600 hover:bg-slate-50"
+                  className={`group block py-3 px-1 text-base font-semibold uppercase tracking-[0.08em] transition-colors drop-shadow-[0_4px_10px_rgba(0,0,0,0.45)] ${
+                    isActive(item.path) ? "text-white" : "text-white/75 hover:text-white"
                   }`}
                 >
-                  {item.label}
+                  <span
+                    className={`inline-block pb-1 border-b ${
+                      isActive(item.path)
+                        ? "border-white"
+                        : "border-white/25 group-hover:border-white/70"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
                 </Link>
               ))}
               <Link to={appointmentUrl} onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-700 text-white">
+                <Button className="w-full rounded-full border border-white text-white bg-transparent hover:bg-white/10">
                   Book Appointment
                 </Button>
               </Link>
@@ -133,7 +139,7 @@ export default function Layout({ children, currentPageName }) {
       <main className="relative z-10">{children}</main>
 
       {/* Footer */}
-      <footer className="relative mt-24 overflow-hidden">
+      <footer className="relative mt-0 overflow-hidden">
         <div className="absolute inset-0 bg-slate-950" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.25),transparent_30%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(56,189,248,0.25),transparent_30%)]" />

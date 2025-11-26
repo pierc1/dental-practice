@@ -28,5 +28,115 @@
     "category": "Orthodontics",
     "icon": "smile",
     "image_url": "https://images.unsplash.com/photo-1609840114035-3c981960afdb?w=800&q=80"
+  },
+  {
+    "id": "s4",
+    "name": "Comprehensive Exam & Digital X-Rays",
+    "description": "Complete exam with high-definition imaging to baseline your oral health",
+    "duration": 75,
+    "price_range": "$180-$240",
+    "category": "General Dentistry",
+    "icon": "exam",
+    "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&q=80"
+  },
+  {
+    "id": "s5",
+    "name": "Periodontal Therapy",
+    "description": "Deep cleaning and gum therapy to control periodontal disease",
+    "duration": 75,
+    "price_range": "$280-$450",
+    "category": "General Dentistry",
+    "icon": "gum-care",
+    "image_url": "https://images.unsplash.com/photo-1527613426441-4da17471b66d?w=800&q=80"
+  },
+  {
+    "id": "s6",
+    "name": "Same-Day Emergency Visit",
+    "description": "Rapid assessment and treatment for toothaches, chips, or swelling",
+    "duration": 45,
+    "price_range": "$150-$250",
+    "category": "General Dentistry",
+    "icon": "emergency",
+    "image_url": "https://images.unsplash.com/photo-1509083810045-5c6f41ef0905?w=800&q=80"
+  },
+  {
+    "id": "s7",
+    "name": "Porcelain Veneers",
+    "description": "Custom veneers to correct shape, shade, and symmetry for a camera-ready smile",
+    "duration": 120,
+    "price_range": "$1200-$1800 per tooth",
+    "category": "Cosmetic Dentistry",
+    "icon": "veneers",
+    "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&q=80"
+  },
+  {
+    "id": "s8",
+    "name": "Smile Makeover Consultation",
+    "description": "Digital smile design review with a cosmetic dentist to map your ideal results",
+    "duration": 45,
+    "price_range": "$150-$250",
+    "category": "Cosmetic Dentistry",
+    "icon": "smile-design",
+    "image_url": "https://images.unsplash.com/photo-1527613426441-4da17471b66d?w=800&q=80"
+  },
+  {
+    "id": "s9",
+    "name": "Clear Retainers & Retention Plan",
+    "description": "Custom retainers and check-ins to keep your alignment stable after treatment",
+    "duration": 30,
+    "price_range": "$350-$600",
+    "category": "Orthodontics",
+    "icon": "retainer",
+    "image_url": "https://images.unsplash.com/photo-1585716821083-5cbdd0e95b06?w=800&q=80"
+  },
+  {
+    "id": "s10",
+    "name": "Bite Alignment Review",
+    "description": "Detailed occlusion assessment to fine-tune comfort and jaw balance",
+    "duration": 35,
+    "price_range": "$180-$300",
+    "category": "Orthodontics",
+    "icon": "bite",
+    "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80"
+  },
+  {
+    "id": "s11",
+    "name": "Dental Implants",
+    "description": "Surgically placed implants to restore missing teeth with lasting stability",
+    "duration": 90,
+    "price_range": "$2800-$4500",
+    "category": "Oral Surgery",
+    "icon": "implant",
+    "image_url": "https://images.unsplash.com/photo-1582719478148-9fffeee832b8?w=800&q=80"
+  },
+  {
+    "id": "s12",
+    "name": "Wisdom Teeth Removal",
+    "description": "Gentle extraction with sedation options to protect your comfort",
+    "duration": 60,
+    "price_range": "$950-$1600",
+    "category": "Oral Surgery",
+    "icon": "extraction",
+    "image_url": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80"
+  },
+  {
+    "id": "s13",
+    "name": "Pediatric Sealants",
+    "description": "Protective sealants for cavity-prone molars to keep little smiles healthy",
+    "duration": 40,
+    "price_range": "$140-$220",
+    "category": "Pediatric Dentistry",
+    "icon": "sealants",
+    "image_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&q=80"
+  },
+  {
+    "id": "s14",
+    "name": "Fluoride Treatment",
+    "description": "Quick fluoride varnish to strengthen enamel and prevent decay",
+    "duration": 20,
+    "price_range": "$60-$90",
+    "category": "Pediatric Dentistry",
+    "icon": "fluoride",
+    "image_url": "https://images.unsplash.com/photo-1588774069160-3e4c61c55185?w=800&q=80"
   }
 ]

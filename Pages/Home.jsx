@@ -16,6 +16,7 @@ import {
   ArrowRight,
   Clock,
   MapPin,
+  Phone,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -31,7 +32,7 @@ export default function Home() {
   const serviceImageFallback =
     "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80";
   const heroPhoto =
-    "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=1400&q=80";
+    "https://img.freepik.com/free-photo/waist-up-shot-cute-friendly-looking-pleasant-african-american-female_176420-31277.jpg?t=st=1764187094~exp=1764190694~hmac=8c23c82f998b7aed20d3bc183e2b453bf2fd1112da789b1a9ca51263c515f477&w=2000";
 
   const trustPoints = [
     { title: "Safety guarantee", body: "Precision sterilization, medical-grade filtration, and transparent protocols for every visit." },
@@ -71,7 +72,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(56,189,248,0.15),transparent_32%)]" />
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black opacity-90" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-28 md:pt-36 pb-20 md:pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-40 md:pt-52 pb-20 md:pb-28">
           <div className="grid lg:grid-cols-[0.9fr_1.1fr] md:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="space-y-7">
               <div className="text-sm uppercase tracking-[0.28em] text-cyan-200 font-semibold">
@@ -102,26 +103,32 @@ export default function Home() {
                   </Button>
                 </Link>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 text-sm text-slate-200 pt-2">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-cyan-200" />
-                  <span className="font-semibold text-white">Mon – Sat 8:00 – 20:00</span>
+              <div className="flex flex-col gap-3 text-sm text-slate-200 pt-2">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <Clock className="w-4 h-4 text-cyan-200" />
+                    <span className="font-semibold text-white">Mon – Sat 8:00 – 20:00</span>
+                  </div>
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <MapPin className="w-4 h-4 text-cyan-200" />
+                    <span className="font-semibold text-white">123 Park Avenue, New York</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-cyan-200" />
-                  <span className="font-semibold text-white">123 Park Avenue, New York</span>
-                </div>
-                <a href={CONTACT_INFO.phone.href} className="text-cyan-200 hover:text-white transition-colors">
+                <a
+                  href={CONTACT_INFO.phone.href}
+                  className="flex items-center gap-2 text-cyan-200 hover:text-white transition-colors whitespace-nowrap"
+                >
+                  <Phone className="w-4 h-4" />
                   {CONTACT_INFO.phone.display}
                 </a>
               </div>
             </div>
 
-            <div className="relative rounded-[28px] overflow-hidden shadow-2xl border border-white/10 min-h-[520px] w-full">
+            <div className="relative rounded-[28px] overflow-hidden shadow-2xl border border-white/10 min-h-[520px] w-full bg-slate-800">
               <img
                 src={heroPhoto}
                 alt="Modern dental studio"
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-l from-slate-900/35 via-slate-900/10 to-transparent" />
             </div>
@@ -311,6 +318,7 @@ export default function Home() {
         buttonText="Book your appointment"
         to={appointmentUrl}
         buttonClassName="text-lg px-10"
+        className="pt-12 md:pt-16"
       />
     </div>
   );

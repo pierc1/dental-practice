@@ -114,41 +114,41 @@ export default function BookAppointment() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="max-w-2xl border-none shadow-2xl">
+          <Card className="max-w-2xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur">
             <CardContent className="p-12 text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <CheckCircle2 className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">Appointment Requested!</h2>
-              <p className="text-lg text-slate-600 mb-8">
+              <h2 className="text-3xl font-bold text-white mb-4">Appointment Requested!</h2>
+              <p className="text-lg text-slate-200 mb-8">
                 Thank you for choosing NYC Smiles. We've received your appointment request and will contact you shortly to confirm.
               </p>
-              <div className="bg-slate-50 rounded-xl p-6 mb-8 text-left">
-                <h3 className="font-semibold text-slate-900 mb-4">Appointment Details:</h3>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8 text-left text-white">
+                <h3 className="font-semibold text-white mb-4">Appointment Details:</h3>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-cyan-600" />
-                    <span className="text-slate-700">{formData.patient_name}</span>
+                  <div className="flex items-center gap-3 text-slate-100">
+                    <User className="w-5 h-5 text-cyan-200" />
+                    <span>{formData.patient_name}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Stethoscope className="w-5 h-5 text-cyan-600" />
-                    <span className="text-slate-700">Dr. {selectedDentist?.full_name}</span>
+                  <div className="flex items-center gap-3 text-slate-100">
+                    <Stethoscope className="w-5 h-5 text-cyan-200" />
+                    <span>Dr. {selectedDentist?.full_name}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-cyan-600" />
-                    <span className="text-slate-700">
+                  <div className="flex items-center gap-3 text-slate-100">
+                    <Calendar className="w-5 h-5 text-cyan-200" />
+                    <span>
                       {format(new Date(formData.appointment_date), 'EEEE, MMMM d, yyyy')}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-cyan-600" />
-                    <span className="text-slate-700">{formData.appointment_time}</span>
+                  <div className="flex items-center gap-3 text-slate-100">
+                    <Clock className="w-5 h-5 text-cyan-200" />
+                    <span>{formData.appointment_time}</span>
                   </div>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export default function BookAppointment() {
                     is_new_patient: true
                   });
                 }}
-                className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white"
+                className="bg-transparent border border-white text-white hover:bg-white/10"
               >
                 Book Another Appointment
               </Button>
@@ -179,7 +179,7 @@ export default function BookAppointment() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 py-12">
+    <div className="min-h-screen bg-slate-950 pt-36 md:pt-40 lg:pt-44 pb-16 text-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -187,22 +187,22 @@ export default function BookAppointment() {
           transition={{ duration: 0.6 }}
         >
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-              Book Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-cyan-700">Appointment</span>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Book Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-cyan-200">Appointment</span>
             </h1>
-            <p className="text-xl text-slate-600">
+            <p className="text-xl text-slate-200">
               Choose your preferred dentist and time. We'll confirm your appointment shortly.
             </p>
           </div>
 
           {error && (
-            <Alert variant="destructive" className="mb-6">
+            <Alert variant="destructive" className="mb-6 bg-red-500/10 text-white border-red-500/30">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          <Card className="border-none shadow-xl">
+          <Card className="border border-white/10 bg-white/5 shadow-xl backdrop-blur">
             <CardHeader className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
               <CardTitle className="text-2xl">Appointment Information</CardTitle>
             </CardHeader>
@@ -210,8 +210,8 @@ export default function BookAppointment() {
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Personal Information */}
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                    <User className="w-5 h-5 text-cyan-600" />
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <User className="w-5 h-5 text-cyan-200" />
                     Personal Information
                   </h3>
                   <div className="grid md:grid-cols-2 gap-6">
@@ -223,7 +223,7 @@ export default function BookAppointment() {
                         onChange={(e) => setFormData({...formData, patient_name: e.target.value})}
                         placeholder="John Doe"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -235,7 +235,7 @@ export default function BookAppointment() {
                         onChange={(e) => setFormData({...formData, patient_email: e.target.value})}
                         placeholder="john@example.com"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -247,7 +247,7 @@ export default function BookAppointment() {
                         onChange={(e) => setFormData({...formData, patient_phone: e.target.value})}
                         placeholder="(555) 123-4567"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -256,7 +256,7 @@ export default function BookAppointment() {
                         value={formData.is_new_patient.toString()}
                         onValueChange={(value) => setFormData({...formData, is_new_patient: value === "true"})}
                       >
-                        <SelectTrigger className="mt-2">
+                        <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -270,8 +270,8 @@ export default function BookAppointment() {
 
                 {/* Service Selection */}
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                    <Stethoscope className="w-5 h-5 text-cyan-600" />
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-cyan-200" />
                     Service Type
                   </h3>
                   <div>
@@ -283,8 +283,8 @@ export default function BookAppointment() {
                         value={formData.service_name}
                         onValueChange={(value) => setFormData({...formData, service_name: value})}
                       >
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Choose a service..." />
+                        <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
+                          <SelectValue placeholder="Choose a service..." className="placeholder:text-slate-400" />
                         </SelectTrigger>
                         <SelectContent>
                           {services.map((service) => (
@@ -300,8 +300,8 @@ export default function BookAppointment() {
 
                 {/* Dentist Selection */}
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                    <User className="w-5 h-5 text-cyan-600" />
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <User className="w-5 h-5 text-cyan-200" />
                     Choose Your Dentist *
                   </h3>
                   {dentistsLoading ? (
@@ -318,23 +318,23 @@ export default function BookAppointment() {
                           onClick={() => setFormData({...formData, dentist_id: dentist.id, appointment_date: "", appointment_time: ""})}
                           className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                             formData.dentist_id === dentist.id
-                              ? "border-cyan-500 bg-cyan-50"
-                              : "border-slate-200 hover:border-cyan-300"
+                              ? "border-cyan-400 bg-white/5"
+                              : "border-white/10 hover:border-cyan-300"
                           }`}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center flex-shrink-0">
                               <span className="text-xl text-white font-bold">
                                 {dentist.full_name.charAt(0)}
                               </span>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-slate-900">{dentist.full_name}</div>
-                              <Badge variant="secondary" className="text-xs mt-1">
+                              <div className="font-semibold text-white">{dentist.full_name}</div>
+                              <Badge variant="secondary" className="text-xs mt-1 bg-white/10 text-white border border-white/20">
                                 {dentist.specialty}
                               </Badge>
                               {dentist.available_days && dentist.available_days.length > 0 && (
-                                <div className="text-xs text-slate-600 mt-2">
+                                <div className="text-xs text-slate-300 mt-2">
                                   Available: {dentist.available_days.slice(0, 3).join(", ")}
                                   {dentist.available_days.length > 3 && "..."}
                                 </div>
@@ -350,8 +350,8 @@ export default function BookAppointment() {
                 {/* Date & Time Selection */}
                 {formData.dentist_id && (
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-cyan-600" />
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-cyan-200" />
                       Select Date & Time *
                     </h3>
                     <div className="grid md:grid-cols-2 gap-6">
@@ -361,7 +361,7 @@ export default function BookAppointment() {
                           value={formData.appointment_date}
                           onValueChange={(value) => setFormData({...formData, appointment_date: value})}
                         >
-                          <SelectTrigger className="mt-2">
+                          <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
                             <SelectValue placeholder="Choose a date..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -380,7 +380,7 @@ export default function BookAppointment() {
                           onValueChange={(value) => setFormData({...formData, appointment_time: value})}
                           disabled={!formData.appointment_date}
                         >
-                          <SelectTrigger className="mt-2">
+                          <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
                             <SelectValue placeholder="Choose a time..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -404,7 +404,7 @@ export default function BookAppointment() {
                     value={formData.notes}
                     onChange={(e) => setFormData({...formData, notes: e.target.value})}
                     placeholder="Any specific concerns or information we should know..."
-                    className="mt-2 h-32"
+                    className="mt-2 h-32 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
                   />
                 </div>
 
@@ -420,16 +420,16 @@ export default function BookAppointment() {
             </CardContent>
           </Card>
 
-          <div className="mt-8 text-center text-sm text-slate-600">
-          <p>
-            Need immediate assistance? Call us at{" "}
-            <a
-              href={CONTACT_INFO.phone.href}
-              className="text-cyan-600 hover:underline font-semibold"
-            >
-              {CONTACT_INFO.phone.display}
-            </a>
-          </p>
+          <div className="mt-8 text-center text-sm text-slate-300">
+            <p>
+              Need immediate assistance? Call us at{" "}
+              <a
+                href={CONTACT_INFO.phone.href}
+                className="text-cyan-300 hover:underline font-semibold"
+              >
+                {CONTACT_INFO.phone.display}
+              </a>
+            </p>
           </div>
         </motion.div>
       </div>

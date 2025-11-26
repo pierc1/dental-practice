@@ -14,7 +14,7 @@ export default function CtaSection({
   children,
 }) {
   return (
-    <section className={`relative py-20 overflow-hidden ${className}`}>
+    <section className={`relative pt-24 pb-24 md:pt-28 md:pb-24 overflow-hidden ${className}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-700" />
       <div className="absolute -right-10 -bottom-24 w-72 h-72 bg-white/20 blur-3xl rounded-full" />
       <div className="absolute -left-16 -top-24 w-72 h-72 bg-cyan-300/30 blur-3xl rounded-full" />
