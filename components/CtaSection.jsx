@@ -27,7 +27,7 @@ export default function CtaSection({
           <Link to={to}>
             <Button
               size="lg"
-              className={`rounded-full bg-white text-cyan-700 hover:bg-cyan-50 shadow-xl shadow-cyan-800/20 px-8 ${buttonClassName}`}
+              className={`rounded-full px-10 shadow-xl shadow-cyan-900/25 ${buttonClassName}`}
             >
               {buttonText}
               {ButtonIcon && (
