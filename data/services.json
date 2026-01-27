@@ -7,7 +7,7 @@
     "price_range": "$120-$180",
     "category": "General Dentistry",
     "icon": "cleaning",
-    "image_url": "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80"
+    "image_url": "https://img.freepik.com/free-photo/checkup-dentist-tool-instrument-young_1301-3124.jpg?t=st=1764351049~exp=1764354649~hmac=df57cfbde5c281d94a0c5db7242eaecd983af6fa2c365c77a7e7023500abdd06&w=2000"
   },
   {
     "id": "s2",
@@ -17,7 +17,7 @@
     "price_range": "$250-$400",
     "category": "Cosmetic Dentistry",
     "icon": "sparkles",
-    "image_url": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80"
+    "image_url": "https://img.freepik.com/free-photo/close-up-perfect-smile_1149-1021.jpg?t=st=1764351453~exp=1764355053~hmac=fe3d5b1698be22f3292e7cfb5b6dacc3052261ae40334b7ddda61ad8d65e3123&w=1060"
   },
   {
     "id": "s3",
@@ -27,7 +27,7 @@
     "price_range": "$3500-$6000",
     "category": "Orthodontics",
     "icon": "smile",
-    "image_url": "https://images.unsplash.com/photo-1609840114035-3c981960afdb?w=800&q=80"
+    "image_url": "https://img.freepik.com/free-photo/portrait-beautiful-patient-holding-orthodontic-retainers-dental-clinic_662251-2605.jpg?t=st=1764350984~exp=1764354584~hmac=6d870bae0f29fb8a12d7176d9d60310daa62a0298c64fde6124849fa6b764f98&w=2000"
   },
   {
     "id": "s4",

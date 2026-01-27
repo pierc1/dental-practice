@@ -32,7 +32,7 @@ export default function Home() {
   const serviceImageFallback =
     "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80";
   const heroPhoto =
-    "https://img.freepik.com/free-photo/waist-up-shot-cute-friendly-looking-pleasant-african-american-female_176420-31277.jpg?t=st=1764187094~exp=1764190694~hmac=8c23c82f998b7aed20d3bc183e2b453bf2fd1112da789b1a9ca51263c515f477&w=2000";
+    "public/Woman Smiling.jpg";
 
   const trustPoints = [
     { title: "Safety guarantee", body: "Precision sterilization, medical-grade filtration, and transparent protocols for every visit." },
@@ -72,9 +72,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(56,189,248,0.15),transparent_32%)]" />
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black opacity-90" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-40 md:pt-52 pb-20 md:pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-40 md:pt-52 pb-0">
           <div className="grid lg:grid-cols-[0.9fr_1.1fr] md:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="space-y-7">
+            <div className="space-y-7 pb-16 md:pb-24">
               <div className="text-sm uppercase tracking-[0.28em] text-cyan-200 font-semibold">
                 NYC Smiles
               </div>
@@ -88,7 +88,7 @@ export default function Home() {
                 </span>
               </h1>
               <p className="text-lg text-slate-200 max-w-xl">
-                A modern, technology-led dental studio delivering safe, aesthetic results with concierge-level care.
+                A modern, technology-led dental studio delivering<br></br> safe, aesthetic results with concierge-level care.
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <Link to={appointmentUrl}>
@@ -123,14 +123,14 @@ export default function Home() {
                 </a>
               </div>
             </div>
-
-            <div className="relative rounded-[28px] overflow-hidden shadow-2xl border border-white/10 min-h-[520px] w-full bg-slate-800">
+          </div>
+          <div className="absolute inset-x-0 bottom-0 flex justify-end px-4 sm:px-6 lg:px-8">
+            <div className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[550px] -translate-x-4 md:-translate-x-6 lg:-translate-x-10">
               <img
                 src={heroPhoto}
                 alt="Modern dental studio"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-auto object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-l from-slate-900/35 via-slate-900/10 to-transparent" />
             </div>
           </div>
         </div>

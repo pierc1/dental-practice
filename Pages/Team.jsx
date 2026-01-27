@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import CtaSection from "@/components/CtaSection";
 import { CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
-import { 
+import {
   GraduationCap,
   Award,
   Calendar,
@@ -94,13 +94,23 @@ export default function Team() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="border border-white/10 bg-white/5 backdrop-blur hover:-translate-y-1 transition-all duration-300 shadow-md shadow-black/30 hover:shadow-2xl overflow-hidden h-full">
+                  <Card className="border border-white/10 bg-white/5 backdrop-blur transition-all duration-300 shadow-md shadow-black/30 overflow-hidden h-full flex flex-col">
                     <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800">
                       {dentist.photo_url ? (
                         <img
                           src={dentist.photo_url}
                           alt={dentist.full_name}
                           className="w-full h-full object-cover"
+                          style={{
+                            objectPosition:
+                              dentist.id === 'd1'
+                                ? 'center 20%'
+                                : dentist.id === 'd2'
+                                  ? 'center 39%'
+                                : dentist.id === 'd3'
+                                  ? 'center 74%'
+                                  : 'center 40%',
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -118,56 +128,58 @@ export default function Team() {
                       </div>
                     </div>
 
-                    <CardContent className="p-6">
-                      <h3 className="text-2xl font-semibold text-white mb-1">
-                        {dentist.full_name}
-                      </h3>
-                      {dentist.title && (
-                        <p className="text-cyan-200 font-medium mb-4">{dentist.title}</p>
-                      )}
-
-                      {dentist.bio && (
-                        <p className="text-slate-200 mb-6 line-clamp-3 leading-relaxed">{dentist.bio}</p>
-                      )}
-
-                      <div className="space-y-3 mb-6">
-                        {dentist.education && (
-                          <div className="flex items-start gap-3">
-                            <GraduationCap className="w-5 h-5 text-cyan-200 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <div className="text-sm font-medium text-white">Education</div>
-                              <div className="text-sm text-slate-200">{dentist.education}</div>
-                            </div>
-                          </div>
+                    <CardContent className="p-6 flex flex-col flex-1">
+                      <div className="flex-1">
+                        <h3 className="text-2xl font-semibold text-white mb-1">
+                          {dentist.full_name}
+                        </h3>
+                        {dentist.title && (
+                          <p className="text-cyan-200 font-medium mb-4">{dentist.title}</p>
                         )}
 
-                        {dentist.years_experience && (
-                          <div className="flex items-start gap-3">
-                            <Award className="w-5 h-5 text-cyan-200 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <div className="text-sm font-medium text-white">Experience</div>
-                              <div className="text-sm text-slate-200">{dentist.years_experience} years</div>
-                            </div>
-                          </div>
+                        {dentist.bio && (
+                          <p className="text-slate-200 mb-6 line-clamp-3 leading-relaxed">{dentist.bio}</p>
                         )}
 
-                        {dentist.available_days && dentist.available_days.length > 0 && (
-                          <div className="flex items-start gap-3">
-                            <Calendar className="w-5 h-5 text-cyan-200 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <div className="text-sm font-medium text-white">Available</div>
-                              <div className="text-sm text-slate-200">
-                                {dentist.available_days.join(", ")}
+                        <div className="space-y-3 mb-6">
+                          {dentist.education && (
+                            <div className="flex items-start gap-3">
+                              <GraduationCap className="w-5 h-5 text-cyan-200 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <div className="text-sm font-medium text-white">Education</div>
+                                <div className="text-sm text-slate-200">{dentist.education}</div>
                               </div>
-                              {dentist.available_hours && (
-                                <div className="text-sm text-slate-200">{dentist.available_hours}</div>
-                              )}
                             </div>
-                          </div>
-                        )}
+                          )}
+
+                          {dentist.years_experience && (
+                            <div className="flex items-start gap-3">
+                              <Award className="w-5 h-5 text-cyan-200 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <div className="text-sm font-medium text-white">Experience</div>
+                                <div className="text-sm text-slate-200">{dentist.years_experience} years</div>
+                              </div>
+                            </div>
+                          )}
+
+                          {dentist.available_days && dentist.available_days.length > 0 && (
+                            <div className="flex items-start gap-3">
+                              <Calendar className="w-5 h-5 text-cyan-200 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <div className="text-sm font-medium text-white">Available</div>
+                                <div className="text-sm text-slate-200">
+                                  {dentist.available_days.join(", ")}
+                                </div>
+                                {dentist.available_hours && (
+                                  <div className="text-sm text-slate-200">{dentist.available_hours}</div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      <Link to={appointmentUrl}>
+                      <Link to={appointmentUrl} className="mt-auto">
                         <Button className="w-full rounded-full border border-white text-white bg-transparent hover:bg-white/10">
                           Book with Dr. {dentist.full_name.split(" ").pop()}
                           <ArrowRight className="ml-2 w-4 h-4" />

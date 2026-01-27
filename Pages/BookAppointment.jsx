@@ -65,7 +65,8 @@ export default function BookAppointment() {
     }
   });
 
-  const selectedDentist = dentists.find(d => d.id === formData.dentist_id);
+  const bookableDentists = dentists.filter((dentist) => dentist.specialty !== "Patient Experience");
+  const selectedDentist = bookableDentists.find(d => d.id === formData.dentist_id);
 
   const getAvailableTimes = () => {
     const times = [];
@@ -312,7 +313,7 @@ export default function BookAppointment() {
                     </div>
                   ) : (
                     <div className="grid md:grid-cols-2 gap-4">
-                      {dentists.map((dentist) => (
+                      {bookableDentists.map((dentist) => (
                         <div
                           key={dentist.id}
                           onClick={() => setFormData({...formData, dentist_id: dentist.id, appointment_date: "", appointment_time: ""})}

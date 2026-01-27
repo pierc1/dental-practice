@@ -32,7 +32,7 @@ export function Select({ value, onValueChange, disabled, children }) {
 
   return (
     <select
-      className={`w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none ${triggerClassName}`}
+      className={`w-full h-12 rounded-md border border-slate-300 bg-transparent text-inherit px-3 text-sm focus:border-cyan-500 focus:outline-none ${triggerClassName}`}
       value={value ?? ''}
       onChange={(e) => onValueChange?.(e.target.value)}
       disabled={disabled}
@@ -60,4 +60,3 @@ export function SelectValue({ placeholder }) { return <>{placeholder ?? null}</>
 SelectValue.displayName = 'SelectValue'
 
 export default Select
-

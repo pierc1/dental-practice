@@ -4,6 +4,7 @@ import { createPageUrl } from "@/utils";
 import { ROUTES, CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
 import { Phone, Mail, MapPin, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -53,7 +54,7 @@ export default function Layout({ children, currentPageName }) {
               <img
                 src="/NYC-smiles.svg"
                 alt="NYC Smiles"
-                className="h-20 w-auto transition-transform group-hover:scale-105"
+                className="h-16 w-auto transition-transform group-hover:scale-105"
               />
             </Link>
 
@@ -148,7 +149,7 @@ export default function Layout({ children, currentPageName }) {
                 <img
                   src="/NYC-smiles.svg"
                   alt="NYC Smiles"
-                  className="h-24 w-auto"
+                  className="h-16 w-auto max-w-full"
                 />
               </div>
               <p className="text-sm text-slate-300 leading-relaxed">
@@ -208,7 +209,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <div className="mt-12 p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md text-center text-sm text-slate-300">
+          <div className="mt-12 text-left text-sm text-slate-300">
             <p>&copy; 2025 NYC Smiles Dental Practice. Crafted for confident smiles.</p>
           </div>
         </div>

@@ -1,11 +1,11 @@
 [
   {
     "id": "d1",
-    "full_name": "Dr. Emily Rodriguez",
+    "full_name": "Dr. Martin Rodriguez",
     "title": "DDS, MS",
     "specialty": "Orthodontics",
-    "bio": "Dr. Rodriguez is a board-certified orthodontist specializing in Invisalign and traditional braces. She creates beautiful, healthy smiles.",
-    "photo_url": "",
+    "bio": "Dr. Rodriguez is a board-certified orthodontist specializing in Invisalign and traditional braces. He creates beautiful, healthy smiles.",
+    "photo_url": "https://img.freepik.com/free-photo/nurse-preparing-consult_23-2149309930.jpg?t=st=1764347316~exp=1764350916~hmac=5fa06407d0cf805bb2487a559fd2f21c1d162ded1b47711711d5dbf600b2132f&w=2000",
     "education": "Harvard School of Dental Medicine",
     "years_experience": 10,
     "available_days": ["Tuesday", "Wednesday", "Thursday", "Saturday"],
@@ -17,7 +17,7 @@
     "title": "DDS",
     "specialty": "Cosmetic Dentistry",
     "bio": "Dr. Williams specializes in cosmetic dentistry with over 15 years of experience transforming smiles. She's passionate about helping patients feel confident.",
-    "photo_url": "",
+    "photo_url": "https://img.freepik.com/free-photo/portrait-dentist-standing-with-arms-crossed_107420-73927.jpg?t=st=1764346538~exp=1764350138~hmac=c75655a03e92992a28ad110081fee86b2649ea430f84211a8057953431d2aa25&w=2000",
     "education": "Columbia University College of Dental Medicine",
     "years_experience": 15,
     "available_days": ["Monday", "Tuesday", "Wednesday", "Friday"],
@@ -29,11 +29,34 @@
     "title": "DMD",
     "specialty": "General Dentistry",
     "bio": "Dr. Chen provides comprehensive general dentistry services with a gentle touch. He believes in preventive care and patient education.",
-    "photo_url": "",
+    "photo_url": "https://img.freepik.com/premium-photo/professional-dentist-dental-clinic_274689-167.jpg?w=2000",
     "education": "NYU College of Dentistry",
-    "years_experience": 12,
+    "years_experience": 18,
     "available_days": ["Monday", "Wednesday", "Thursday", "Friday"],
     "available_hours": "8:00 AM - 6:00 PM"
+  },
+  {
+    "id": "d4",
+    "full_name": "Emma Hernandez",
+    "title": "RDH",
+    "specialty": "Dental Hygiene",
+    "bio": "Emma specializes in gentle cleanings and patient education, making every visit smooth and reassuring.",
+    "photo_url": "https://img.freepik.com/free-photo/portrait-pretty-medical-nurse-smiling-camera-hospital-office-wearing-blue-uniform-healthcare-practitioner-sitting-desk-using-computer-modern-clinic-looking-monitor-medicine_482257-15886.jpg?t=st=1764346844~exp=1764350444~hmac=fcf519268834d1e318b96b4f0dd6d21073a0051f52fa23fdae6218f8c387d080&w=2000",
+    "education": "BS Dental Hygiene, NYU College of Dentistry",
+    "years_experience": 9,
+    "available_days": ["Tuesday", "Thursday", "Saturday"],
+    "available_hours": "9:00 AM - 4:30 PM"
+  },
+  {
+    "id": "d5",
+    "full_name": "Maria Lopez",
+    "title": "Patient Care Coordinator",
+    "specialty": "Patient Experience",
+    "bio": "Maria keeps schedules running on-time and helps patients navigate treatment plans with clarity and care.",
+    "photo_url": "https://img.freepik.com/free-photo/vertical-shot-young-female-dentist-her-office-offering-different-types-dental-services_181624-58686.jpg?t=st=1764346429~exp=1764350029~hmac=3b75d41cba7dcbd9dcdb722fda7d53e0c0b636f5ddeab8e1227e1e58b6006464&w=2000",
+    "education": "BS Health Administration, UC Davis",
+    "years_experience": 7,
+    "available_days": ["Monday", "Wednesday", "Friday"],
+    "available_hours": "8:30 AM - 5:30 PM"
   }
 ]
-
