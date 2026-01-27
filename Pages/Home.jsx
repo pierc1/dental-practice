@@ -125,7 +125,7 @@ export default function Home() {
             </div>
           </div>
           <div className="absolute inset-x-0 bottom-0 flex justify-end px-4 sm:px-6 lg:px-8">
-            <div className="w-full max-w-[300px] md:max-w-[400px] lg:max-w-[550px] -translate-x-4 md:-translate-x-6 lg:-translate-x-10">
+            <div className="w-full max-w-[200px] md:max-w-[300px] lg:max-w-[475px] -translate-x-4 md:-translate-x-6 lg:-translate-x-10">
               <img
                 src={heroPhoto}
                 alt="Modern dental studio"
