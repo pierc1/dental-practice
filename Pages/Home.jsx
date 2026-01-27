@@ -125,7 +125,7 @@ export default function Home() {
             </div>
           </div>
           <div className="absolute inset-x-0 bottom-0 flex justify-end px-4 sm:px-6 lg:px-8">
-            <div className="w-full max-w-[200px] md:max-w-[300px] lg:max-w-[475px] -translate-x-4 md:-translate-x-6 lg:-translate-x-10">
+            <div className="hidden md:block w-full max-w-[200px] md:max-w-[300px] lg:max-w-[475px] -translate-x-4 md:-translate-x-6 lg:-translate-x-10">
               <img
                 src={heroPhoto}
                 alt="Modern dental studio"
@@ -137,7 +137,7 @@ export default function Home() {
       </section>
 
       {/* Trust Section */}
-      <section className="relative overflow-hidden bg-slate-900 text-white py-20 md:py-24 border-t border-slate-800">
+      <section className="relative overflow-hidden bg-slate-900 text-white py-[4rem] md:py-24 border-t border-slate-800">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(56,189,248,0.15),transparent_35%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(14,165,233,0.12),transparent_32%)]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -168,7 +168,7 @@ export default function Home() {
       </section>
 
       {/* Signature Services */}
-      <section className="relative overflow-hidden py-18 md:py-20 bg-gradient-to-br from-slate-50 via-white to-cyan-50">
+      <section className="relative overflow-hidden pt-[3.75rem] pb-14 md:pt-20 md:pb-18 bg-gradient-to-br from-slate-50 via-white to-cyan-50">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -right-32 -bottom-20 w-96 h-96 bg-cyan-100 blur-3xl" />
         </div>
@@ -276,7 +276,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-white">
+      <section className="py-[4rem] bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <p className="text-sm uppercase tracking-[0.25em] text-cyan-600 font-semibold mb-3">Patient Love</p>

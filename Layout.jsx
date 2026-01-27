@@ -54,7 +54,7 @@ export default function Layout({ children, currentPageName }) {
               <img
                 src="/NYC-smiles.svg"
                 alt="NYC Smiles"
-                className="h-16 w-auto transition-transform group-hover:scale-105"
+                className="h-12 md:h-16 w-auto transition-transform group-hover:scale-105"
               />
             </Link>
 
