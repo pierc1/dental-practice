@@ -278,10 +278,10 @@ export default function Home() {
       {/* Testimonials */}
       <section className="py-[4rem] bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
+          <div className="text-left mb-14">
             <p className="text-sm uppercase tracking-[0.25em] text-cyan-600 font-semibold mb-3">Patient Love</p>
             <h2 className="text-4xl font-semibold text-slate-900">Stories that make us smile</h2>
-            <p className="text-lg text-slate-600 mt-3">Real voices from New Yorkers who chose us for their care.</p>
+            <p className="text-lg text-slate-600 mt-3 max-w-2xl">Real voices from New Yorkers who chose us for their care.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -318,7 +318,7 @@ export default function Home() {
         buttonText="Book your appointment"
         to={appointmentUrl}
         buttonClassName="text-lg px-10"
-        className="pt-12 md:pt-16"
+        className="py-12 md:pt-16"
       />
     </div>
   );

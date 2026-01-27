@@ -10,7 +10,7 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navigationItems = ROUTES;
+  const navigationItems = ROUTES.filter((route) => route.id !== PRIMARY_CTA_ROUTE_ID);
   const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
 
   const isActive = (url) => location.pathname === url;
@@ -125,7 +125,7 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
               ))}
               <Link to={appointmentUrl} onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full rounded-full border border-white text-white bg-transparent hover:bg-white/10">
+                <Button className="w-full mt-6 rounded-full border border-white text-white bg-transparent hover:bg-white/10">
                   Book Appointment
                 </Button>
               </Link>
