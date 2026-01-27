@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { ROUTES, CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
 import { Phone, Mail, MapPin, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -214,6 +214,8 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </div>
       </footer>
+
+      <SpeedInsights />
     </div>
   );
 }
