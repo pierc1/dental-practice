@@ -50,13 +50,11 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link to={createPageUrl("Home")} className="flex items-center gap-3 group">
-              <div className="w-12 h-12 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center shadow-xl shadow-black/20 transition-transform group-hover:scale-105">
-                <span className="text-2xl text-white font-bold tracking-tight">S</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-white group-hover:text-white">NYC Smiles</h1>
-                <p className="text-xs text-white/60">Premium Dental Care</p>
-              </div>
+              <img
+                src="/NYC-smiles.svg"
+                alt="NYC Smiles"
+                className="h-20 w-auto transition-transform group-hover:scale-105"
+              />
             </Link>
 
             {/* Desktop Navigation */}
@@ -147,13 +145,11 @@ export default function Layout({ children, currentPageName }) {
           <div className="grid md:grid-cols-4 gap-10">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/40">
-                  <span className="text-2xl text-white font-bold">S</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">NYC Smiles</h3>
-                  <p className="text-xs text-slate-300">Premium Dental Clinic</p>
-                </div>
+                <img
+                  src="/NYC-smiles.svg"
+                  alt="NYC Smiles"
+                  className="h-24 w-auto"
+                />
               </div>
               <p className="text-sm text-slate-300 leading-relaxed">
                 Elevated, technology-forward dentistry in the heart of Manhattan. Experience concierge-level care designed around your smile.
