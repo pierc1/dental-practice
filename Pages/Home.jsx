@@ -31,8 +31,8 @@ export default function Home() {
   const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
   const serviceImageFallback =
     "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80";
-  const heroPhoto =
-    "public/Woman Smiling.jpg";
+  const heroPhoto = "/Woman Smiling.jpg";
+
 
   const trustPoints = [
     { title: "Safety guarantee", body: "Precision sterilization, medical-grade filtration, and transparent protocols for every visit." },
