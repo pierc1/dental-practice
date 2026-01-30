@@ -15,6 +15,18 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "appointments-api" });
 });
 
+app.get("/api/services", async (req, res) => {
+  try {
+    const result = await query(
+      "select id, name, duration_minutes from services where is_active = true order by name"
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to load services." });
+  }
+});
+
 const pad = (value) => String(value).padStart(2, "0");
 
 const formatDateKey = (date) =>
@@ -51,6 +63,7 @@ app.get("/api/availability", async (req, res) => {
   try {
     const startParam = parseDateParam(req.query.start);
     const endParam = parseDateParam(req.query.end);
+    const serviceIdParam = req.query.serviceId;
 
     const startDate = startParam || new Date();
     startDate.setHours(0, 0, 0, 0);
@@ -60,6 +73,18 @@ app.get("/api/availability", async (req, res) => {
 
     if (endDate < startDate) {
       return res.status(400).json({ message: "End date must be after start date." });
+    }
+
+    let serviceDurationMinutes = null;
+    if (serviceIdParam) {
+      const serviceResult = await query(
+        "select duration_minutes from services where id = $1 and is_active = true",
+        [serviceIdParam]
+      );
+      if (serviceResult.rowCount === 0) {
+        return res.status(400).json({ message: "Invalid serviceId." });
+      }
+      serviceDurationMinutes = Number(serviceResult.rows[0].duration_minutes);
     }
 
     const availabilityResult = await query(
@@ -134,13 +159,14 @@ app.get("/api/availability", async (req, res) => {
       for (const window of windows) {
         const windowStart = buildDateWithTime(cursor, window.start);
         const windowEnd = buildDateWithTime(cursor, window.end);
+        const slotDuration = serviceDurationMinutes || window.slotLength;
 
         for (
           let slotStart = new Date(windowStart.getTime());
           slotStart < windowEnd;
           slotStart = new Date(slotStart.getTime() + window.slotLength * 60000)
         ) {
-          const slotEnd = new Date(slotStart.getTime() + window.slotLength * 60000);
+          const slotEnd = new Date(slotStart.getTime() + slotDuration * 60000);
           if (slotEnd > windowEnd) break;
 
           if (slotStart.getTime() < today.getTime()) {

@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useMemo, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,107 +8,138 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { CONTACT_INFO } from "@/config/siteConfig";
-import { 
+import {
   Calendar,
   Clock,
   User,
-  Mail,
-  Phone,
   CheckCircle2,
   AlertCircle,
-  Stethoscope
+  Stethoscope,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { format, addDays, isBefore, startOfDay } from "date-fns";
+import { addDays, format, startOfDay } from "date-fns";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
+
+const fetchJson = async (url, options) => {
+  const response = await fetch(url, options);
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(payload?.message || "Request failed.");
+  }
+
+  return payload;
+};
+
+const toLocalDate = (dateKey) => new Date(`${dateKey}T00:00:00`);
 
 export default function BookAppointment() {
-  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    patient_name: "",
-    patient_email: "",
-    patient_phone: "",
-    dentist_id: "",
-    service_name: "",
-    appointment_date: "",
-    appointment_time: "",
+    firstName: "",
+    lastInitial: "",
+    contactEmail: "",
+    contactPhone: "",
+    serviceId: "",
+    appointmentDate: "",
+    slotStart: "",
     notes: "",
-    is_new_patient: true
   });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
 
-  const { data: dentists = [], isLoading: dentistsLoading } = useQuery({
-    queryKey: ['dentists'],
-    queryFn: () => base44.entities.Dentist.list(),
-    initialData: []
+  const today = startOfDay(new Date());
+  const startDateKey = format(today, "yyyy-MM-dd");
+  const endDateKey = format(addDays(today, 13), "yyyy-MM-dd");
+
+  const servicesQuery = useQuery({
+    queryKey: ["services"],
+    queryFn: () => fetchJson(`${API_URL}/api/services`),
   });
 
-  const { data: services = [], isLoading: servicesLoading } = useQuery({
-    queryKey: ['services'],
-    queryFn: () => base44.entities.Service.list(),
-    initialData: []
+  const availabilityQuery = useQuery({
+    queryKey: ["availability", startDateKey, endDateKey, formData.serviceId],
+    queryFn: () => {
+      const params = new URLSearchParams({
+        start: startDateKey,
+        end: endDateKey,
+      });
+      if (formData.serviceId) {
+        params.set("serviceId", formData.serviceId);
+      }
+      return fetchJson(`${API_URL}/api/availability?${params.toString()}`);
+    },
   });
 
-  const createAppointmentMutation = useMutation({
-    mutationFn: (data) => base44.entities.Appointment.create(data),
+  const slotsByDate = useMemo(() => {
+    const slots = availabilityQuery.data?.slots || [];
+    return slots.reduce((acc, slot) => {
+      if (!acc[slot.date]) acc[slot.date] = [];
+      acc[slot.date].push(slot);
+      return acc;
+    }, {});
+  }, [availabilityQuery.data]);
+
+  const availableDates = useMemo(() => Object.keys(slotsByDate).sort(), [slotsByDate]);
+
+  const selectedService = servicesQuery.data?.find(
+    (service) => String(service.id) === String(formData.serviceId)
+  );
+
+  const selectedSlots = (slotsByDate[formData.appointmentDate] || []).slice().sort((a, b) =>
+    a.start.localeCompare(b.start)
+  );
+  const selectedSlot = selectedSlots.find((slot) => slot.start === formData.slotStart);
+
+  const bookingMutation = useMutation({
+    mutationFn: (payload) =>
+      fetchJson(`${API_URL}/api/appointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
       setSubmitted(true);
       setError(null);
     },
     onError: (error) => {
-      setError("Failed to book appointment. Please try again.");
-      console.error(error);
-    }
+      setError(error.message || "Failed to book appointment.");
+    },
   });
 
-  const bookableDentists = dentists.filter((dentist) => dentist.specialty !== "Patient Experience");
-  const selectedDentist = bookableDentists.find(d => d.id === formData.dentist_id);
-
-  const getAvailableTimes = () => {
-    const times = [];
-    for (let hour = 9; hour <= 17; hour++) {
-      times.push(`${hour}:00`);
-      if (hour < 17) {
-        times.push(`${hour}:30`);
-      }
-    }
-    return times;
-  };
-
-  const getNextAvailableDates = () => {
-    const dates = [];
-    const today = startOfDay(new Date());
-    
-    for (let i = 1; i <= 30; i++) {
-      const date = addDays(today, i);
-      const dayName = format(date, 'EEEE');
-      
-      if (selectedDentist?.available_days?.includes(dayName)) {
-        dates.push(date);
-      }
-    }
-    
-    return dates;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = (event) => {
+    event.preventDefault();
     setError(null);
 
-    if (!formData.dentist_id || !formData.appointment_date || !formData.appointment_time) {
-      setError("Please fill in all required fields");
+    if (!formData.serviceId) {
+      setError("Please select a service.");
       return;
     }
 
-    const dentist = dentists.find(d => d.id === formData.dentist_id);
-    
-    createAppointmentMutation.mutate({
-      ...formData,
-      dentist_name: dentist?.full_name || "",
-      status: "pending"
+    if (!formData.appointmentDate || !formData.slotStart) {
+      setError("Please select a date and time.");
+      return;
+    }
+
+    if (!formData.firstName.trim()) {
+      setError("Please enter your first name.");
+      return;
+    }
+
+    if (!formData.contactEmail.trim() && !formData.contactPhone.trim()) {
+      setError("Please provide an email or phone number.");
+      return;
+    }
+
+    bookingMutation.mutate({
+      serviceId: Number(formData.serviceId),
+      startTime: formData.slotStart,
+      firstName: formData.firstName.trim(),
+      lastInitial: formData.lastInitial.trim(),
+      contactEmail: formData.contactEmail.trim() || null,
+      contactPhone: formData.contactPhone.trim() || null,
+      notes: formData.notes.trim() || null,
     });
   };
 
@@ -135,21 +165,27 @@ export default function BookAppointment() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-slate-100">
                     <User className="w-5 h-5 text-cyan-200" />
-                    <span>{formData.patient_name}</span>
+                    <span>
+                      {formData.firstName} {formData.lastInitial}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-100">
                     <Stethoscope className="w-5 h-5 text-cyan-200" />
-                    <span>Dr. {selectedDentist?.full_name}</span>
+                    <span>{selectedService?.name}</span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-100">
                     <Calendar className="w-5 h-5 text-cyan-200" />
                     <span>
-                      {format(new Date(formData.appointment_date), 'EEEE, MMMM d, yyyy')}
+                      {formData.appointmentDate
+                        ? format(toLocalDate(formData.appointmentDate), "EEEE, MMMM d, yyyy")
+                        : ""}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-100">
                     <Clock className="w-5 h-5 text-cyan-200" />
-                    <span>{formData.appointment_time}</span>
+                    <span>
+                      {selectedSlot ? format(new Date(selectedSlot.start), "h:mm a") : ""}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -157,15 +193,14 @@ export default function BookAppointment() {
                 onClick={() => {
                   setSubmitted(false);
                   setFormData({
-                    patient_name: "",
-                    patient_email: "",
-                    patient_phone: "",
-                    dentist_id: "",
-                    service_name: "",
-                    appointment_date: "",
-                    appointment_time: "",
+                    firstName: "",
+                    lastInitial: "",
+                    contactEmail: "",
+                    contactPhone: "",
+                    serviceId: "",
+                    appointmentDate: "",
+                    slotStart: "",
                     notes: "",
-                    is_new_patient: true
                   });
                 }}
                 className="bg-transparent border border-white text-white hover:bg-white/10"
@@ -189,10 +224,13 @@ export default function BookAppointment() {
         >
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Book Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-cyan-200">Appointment</span>
+              Book Your{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-cyan-200">
+                Appointment
+              </span>
             </h1>
             <p className="text-xl text-slate-200">
-              Choose your preferred dentist and time. We'll confirm your appointment shortly.
+              Pick a service and a time that works for you. We'll confirm your appointment shortly.
             </p>
           </div>
 
@@ -209,7 +247,6 @@ export default function BookAppointment() {
             </CardHeader>
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Personal Information */}
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <User className="w-5 h-5 text-cyan-200" />
@@ -217,80 +254,88 @@ export default function BookAppointment() {
                   </h3>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <Label htmlFor="patient_name">Full Name *</Label>
+                      <Label htmlFor="first_name">First Name *</Label>
                       <Input
-                        id="patient_name"
-                        value={formData.patient_name}
-                        onChange={(e) => setFormData({...formData, patient_name: e.target.value})}
-                        placeholder="John Doe"
+                        id="first_name"
+                        value={formData.firstName}
+                        onChange={(event) =>
+                          setFormData({ ...formData, firstName: event.target.value })
+                        }
+                        placeholder="Alex"
                         required
                         className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="patient_email">Email Address *</Label>
+                      <Label htmlFor="last_initial">Last Initial</Label>
                       <Input
-                        id="patient_email"
+                        id="last_initial"
+                        value={formData.lastInitial}
+                        onChange={(event) =>
+                          setFormData({ ...formData, lastInitial: event.target.value })
+                        }
+                        placeholder="P"
+                        className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="contact_email">Email Address</Label>
+                      <Input
+                        id="contact_email"
                         type="email"
-                        value={formData.patient_email}
-                        onChange={(e) => setFormData({...formData, patient_email: e.target.value})}
-                        placeholder="john@example.com"
-                        required
+                        value={formData.contactEmail}
+                        onChange={(event) =>
+                          setFormData({ ...formData, contactEmail: event.target.value })
+                        }
+                        placeholder="alex@example.com"
                         className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="patient_phone">Phone Number *</Label>
+                      <Label htmlFor="contact_phone">Phone Number</Label>
                       <Input
-                        id="patient_phone"
+                        id="contact_phone"
                         type="tel"
-                        value={formData.patient_phone}
-                        onChange={(e) => setFormData({...formData, patient_phone: e.target.value})}
+                        value={formData.contactPhone}
+                        onChange={(event) =>
+                          setFormData({ ...formData, contactPhone: event.target.value })
+                        }
                         placeholder="(555) 123-4567"
-                        required
                         className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
                       />
-                    </div>
-                    <div>
-                      <Label htmlFor="is_new_patient">Patient Type</Label>
-                      <Select
-                        value={formData.is_new_patient.toString()}
-                        onValueChange={(value) => setFormData({...formData, is_new_patient: value === "true"})}
-                      >
-                        <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">New Patient</SelectItem>
-                          <SelectItem value="false">Existing Patient</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <p className="mt-2 text-xs text-slate-400">Provide at least one contact method.</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Service Selection */}
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Stethoscope className="w-5 h-5 text-cyan-200" />
                     Service Type
                   </h3>
                   <div>
-                    <Label htmlFor="service_name">Select Service</Label>
-                    {servicesLoading ? (
+                    <Label htmlFor="service_name">Select Service *</Label>
+                    {servicesQuery.isLoading ? (
                       <Skeleton className="h-10 w-full mt-2" />
                     ) : (
                       <Select
-                        value={formData.service_name}
-                        onValueChange={(value) => setFormData({...formData, service_name: value})}
+                        value={formData.serviceId}
+                        onValueChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            serviceId: value,
+                            appointmentDate: "",
+                            slotStart: "",
+                          })
+                        }
                       >
                         <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
                           <SelectValue placeholder="Choose a service..." className="placeholder:text-slate-400" />
                         </SelectTrigger>
                         <SelectContent>
-                          {services.map((service) => (
-                            <SelectItem key={service.id} value={service.name}>
-                              {service.name} - {service.category}
+                          {servicesQuery.data?.map((service) => (
+                            <SelectItem key={service.id} value={String(service.id)}>
+                              {service.name} · {service.duration_minutes} min
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -299,112 +344,87 @@ export default function BookAppointment() {
                   </div>
                 </div>
 
-                {/* Dentist Selection */}
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <User className="w-5 h-5 text-cyan-200" />
-                    Choose Your Dentist *
+                    <Calendar className="w-5 h-5 text-cyan-200" />
+                    Select Date & Time *
                   </h3>
-                  {dentistsLoading ? (
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {[1, 2].map((i) => (
-                        <Skeleton key={i} className="h-32" />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {bookableDentists.map((dentist) => (
-                        <div
-                          key={dentist.id}
-                          onClick={() => setFormData({...formData, dentist_id: dentist.id, appointment_date: "", appointment_time: ""})}
-                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                            formData.dentist_id === dentist.id
-                              ? "border-cyan-400 bg-white/5"
-                              : "border-white/10 hover:border-cyan-300"
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-xl text-white font-bold">
-                                {dentist.full_name.charAt(0)}
-                              </span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-white">{dentist.full_name}</div>
-                              <Badge variant="secondary" className="text-xs mt-1 bg-white/10 text-white border border-white/20">
-                                {dentist.specialty}
-                              </Badge>
-                              {dentist.available_days && dentist.available_days.length > 0 && (
-                                <div className="text-xs text-slate-300 mt-2">
-                                  Available: {dentist.available_days.slice(0, 3).join(", ")}
-                                  {dentist.available_days.length > 3 && "..."}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Date & Time Selection */}
-                {formData.dentist_id && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-cyan-200" />
-                      Select Date & Time *
-                    </h3>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="appointment_date">Appointment Date</Label>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="appointment_date">Appointment Date</Label>
+                      {availabilityQuery.isLoading ? (
+                        <Skeleton className="h-10 w-full mt-2" />
+                      ) : (
                         <Select
-                          value={formData.appointment_date}
-                          onValueChange={(value) => setFormData({...formData, appointment_date: value})}
+                          value={formData.appointmentDate}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              appointmentDate: value,
+                              slotStart: "",
+                            })
+                          }
                         >
                           <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
                             <SelectValue placeholder="Choose a date..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {getNextAvailableDates().map((date) => (
-                              <SelectItem key={date.toISOString()} value={format(date, 'yyyy-MM-dd')}>
-                                {format(date, 'EEEE, MMMM d, yyyy')}
+                            {availableDates.map((dateKey) => (
+                              <SelectItem key={dateKey} value={dateKey}>
+                                {format(toLocalDate(dateKey), "EEEE, MMMM d, yyyy")}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="appointment_time">Appointment Time</Label>
-                        <Select
-                          value={formData.appointment_time}
-                          onValueChange={(value) => setFormData({...formData, appointment_time: value})}
-                          disabled={!formData.appointment_date}
-                        >
-                          <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
-                            <SelectValue placeholder="Choose a time..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getAvailableTimes().map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="appointment_time">Appointment Time</Label>
+                      <Select
+                        value={formData.slotStart}
+                        onValueChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            slotStart: value,
+                          })
+                        }
+                        disabled={!formData.appointmentDate || availabilityQuery.isLoading}
+                      >
+                        <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
+                          <SelectValue
+                            placeholder={
+                              formData.appointmentDate ? "Choose a time..." : "Select a date first"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectedSlots.map((slot) => (
+                            <SelectItem key={slot.start} value={slot.start}>
+                              {format(new Date(slot.start), "h:mm a")}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {!availabilityQuery.isLoading &&
+                        formData.appointmentDate &&
+                        selectedSlots.length === 0 && (
+                          <p className="mt-2 text-xs text-amber-200">
+                            No times available for this date.
+                          </p>
+                        )}
                     </div>
                   </div>
-                )}
+                </div>
 
-                {/* Additional Notes */}
                 <div>
-                  <Label htmlFor="notes">Additional Notes or Concerns</Label>
+                  <Label htmlFor="notes">Additional Notes (no medical details)</Label>
                   <Textarea
                     id="notes"
                     value={formData.notes}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    placeholder="Any specific concerns or information we should know..."
+                    onChange={(event) =>
+                      setFormData({ ...formData, notes: event.target.value })
+                    }
+                    placeholder="Anything else we should know before we reach out?"
                     className="mt-2 h-32 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
                   />
                 </div>
@@ -412,10 +432,10 @@ export default function BookAppointment() {
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={createAppointmentMutation.isPending}
+                  disabled={bookingMutation.isPending}
                   className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-lg text-lg"
                 >
-                  {createAppointmentMutation.isPending ? "Booking..." : "Book Appointment"}
+                  {bookingMutation.isPending ? "Booking..." : "Book Appointment"}
                 </Button>
               </form>
             </CardContent>
