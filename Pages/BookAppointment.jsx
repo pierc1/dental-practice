@@ -263,7 +263,7 @@ export default function BookAppointment() {
                         }
                         placeholder="Alex"
                         required
-                        className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
+                        className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
                       />
                     </div>
                     <div>
@@ -275,7 +275,7 @@ export default function BookAppointment() {
                           setFormData({ ...formData, lastInitial: event.target.value })
                         }
                         placeholder="P"
-                        className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
+                        className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
                       />
                     </div>
                     <div>
@@ -288,7 +288,7 @@ export default function BookAppointment() {
                           setFormData({ ...formData, contactEmail: event.target.value })
                         }
                         placeholder="alex@example.com"
-                        className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
+                        className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
                       />
                     </div>
                     <div>
@@ -301,7 +301,7 @@ export default function BookAppointment() {
                           setFormData({ ...formData, contactPhone: event.target.value })
                         }
                         placeholder="(555) 123-4567"
-                        className="mt-2 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
+                        className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
                       />
                       <p className="mt-2 text-xs text-slate-400">Provide at least one contact method.</p>
                     </div>
@@ -329,7 +329,7 @@ export default function BookAppointment() {
                           })
                         }
                       >
-                        <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
+                        <SelectTrigger className="mt-2 bg-white border-slate-300 text-black">
                           <SelectValue placeholder="Choose a service..." className="placeholder:text-slate-400" />
                         </SelectTrigger>
                         <SelectContent>
@@ -365,7 +365,7 @@ export default function BookAppointment() {
                             })
                           }
                         >
-                          <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
+                          <SelectTrigger className="mt-2 bg-white border-slate-300 text-black">
                             <SelectValue placeholder="Choose a date..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -390,7 +390,7 @@ export default function BookAppointment() {
                         }
                         disabled={!formData.appointmentDate || availabilityQuery.isLoading}
                       >
-                        <SelectTrigger className="mt-2 bg-slate-900/60 border-slate-700 text-white">
+                        <SelectTrigger className="mt-2 bg-white border-slate-300 text-black">
                           <SelectValue
                             placeholder={
                               formData.appointmentDate ? "Choose a time..." : "Select a date first"
@@ -425,7 +425,7 @@ export default function BookAppointment() {
                       setFormData({ ...formData, notes: event.target.value })
                     }
                     placeholder="Anything else we should know before we reach out?"
-                    className="mt-2 h-32 bg-slate-900/60 border-slate-700 text-white placeholder:text-slate-400"
+                    className="mt-2 h-32 bg-white border-slate-300 text-black placeholder:text-slate-500"
                   />
                 </div>
 

@@ -32,14 +32,18 @@ export function Select({ value, onValueChange, disabled, children }) {
 
   return (
     <select
-      className={`w-full h-12 rounded-md border border-slate-300 bg-transparent text-inherit px-3 text-sm focus:border-cyan-500 focus:outline-none ${triggerClassName}`}
+      className={`w-full h-12 rounded-md border border-slate-300 bg-white px-3 text-sm text-black shadow-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 ${triggerClassName}`}
       value={value ?? ''}
       onChange={(e) => onValueChange?.(e.target.value)}
       disabled={disabled}
     >
-      {placeholder && <option value="" disabled={true} hidden>{placeholder}</option>}
+      {placeholder && (
+        <option value="" disabled={true} hidden className="text-slate-400">
+          {placeholder}
+        </option>
+      )}
       {items.map((it) => (
-        <option key={it.value} value={it.value}>
+        <option key={it.value} value={it.value} className="text-black">
           {it.label}
         </option>
       ))}

@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { query } from "./db.js";
+import { sendPatientConfirmation, sendStaffNotification, canSendEmail } from "./email.js";
 
 dotenv.config();
 
@@ -236,7 +237,7 @@ app.post("/api/appointments", async (req, res) => {
     }
 
     const serviceResult = await query(
-      "select id, duration_minutes from services where id = $1 and is_active = true",
+      "select id, name, duration_minutes from services where id = $1 and is_active = true",
       [serviceId]
     );
 
@@ -244,6 +245,7 @@ app.post("/api/appointments", async (req, res) => {
       return res.status(400).json({ message: "Invalid serviceId." });
     }
 
+    const serviceName = serviceResult.rows[0].name;
     const durationMinutes = Number(serviceResult.rows[0].duration_minutes);
     const requestedEnd = new Date(requestedStart.getTime() + durationMinutes * 60000);
 
@@ -322,10 +324,35 @@ app.post("/api/appointments", async (req, res) => {
       ]
     );
 
+    const appointmentPayload = {
+      serviceName,
+      startTime: insertResult.rows[0].start_time,
+      firstName,
+      lastInitial,
+    };
+
+    let emailStatus = null;
+    if (canSendEmail()) {
+      try {
+        const [staffResult, patientResult] = await Promise.allSettled([
+          sendStaffNotification(appointmentPayload),
+          sendPatientConfirmation({
+            ...appointmentPayload,
+            patientEmail: contactEmail,
+          }),
+        ]);
+        emailStatus = { staff: staffResult.status, patient: patientResult.status };
+      } catch (emailError) {
+        console.error("Email send failed:", emailError);
+        emailStatus = { error: true };
+      }
+    }
+
     res.status(201).json({
       id: insertResult.rows[0].id,
       startTime: insertResult.rows[0].start_time,
       endTime: insertResult.rows[0].end_time,
+      emailStatus,
     });
   } catch (error) {
     if (error?.code === "23505") {
