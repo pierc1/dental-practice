@@ -5,6 +5,7 @@ import Home from '../Pages/Home'
 import Services from '../Pages/Services'
 import Team from '../Pages/Team'
 import BookAppointment from '../Pages/BookAppointment'
+import AdminAppointments from '../Pages/AdminAppointments'
 import { ROUTES } from '@/config/siteConfig'
 
 function withLayout(Component, currentPageName) {
@@ -37,6 +38,10 @@ export default function App() {
           />
         )
       })}
+      <Route
+        path="/admin/appointments"
+        element={withLayout(AdminAppointments, 'Admin')}
+      />
       <Route path="*" element={withLayout(Home, 'Home')} />
     </Routes>
   )

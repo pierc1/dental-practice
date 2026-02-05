@@ -28,6 +28,84 @@ app.get("/api/services", async (req, res) => {
   }
 });
 
+app.get("/api/appointments", async (req, res) => {
+  try {
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const suppliedPassword = req.headers["x-admin-password"];
+    if (adminPassword && suppliedPassword !== adminPassword) {
+      return res.status(401).json({ message: "Unauthorized." });
+    }
+
+    const { q, start, end, status, serviceId, limit } = req.query;
+    const filters = [];
+    const values = [];
+
+    const startDate = parseDateParam(start);
+    const endDate = parseDateParam(end);
+
+    if (startDate) {
+      values.push(startDate.toISOString());
+      filters.push(`a.start_time >= $${values.length}`);
+    }
+
+    if (endDate) {
+      const endExclusive = addDays(endDate, 1);
+      values.push(endExclusive.toISOString());
+      filters.push(`a.start_time < $${values.length}`);
+    }
+
+    if (status && status !== "all") {
+      values.push(status);
+      filters.push(`a.status = $${values.length}`);
+    }
+
+    if (serviceId) {
+      values.push(serviceId);
+      filters.push(`a.service_id = $${values.length}`);
+    }
+
+    if (q) {
+      values.push(`%${q}%`);
+      filters.push(
+        `(a.first_name ilike $${values.length}
+          or a.last_initial ilike $${values.length}
+          or a.contact_email ilike $${values.length}
+          or a.contact_phone ilike $${values.length})`
+      );
+    }
+
+    const whereClause = filters.length ? `where ${filters.join(" and ")}` : "";
+    const safeLimit = Math.min(Number(limit) || 200, 500);
+    values.push(safeLimit);
+
+    const result = await query(
+      `select
+          a.id,
+          a.start_time,
+          a.end_time,
+          a.first_name,
+          a.last_initial as last_name,
+          a.contact_email,
+          a.contact_phone,
+          a.notes,
+          a.status,
+          a.created_at,
+          s.name as service_name
+        from appointments a
+        left join services s on a.service_id = s.id
+        ${whereClause}
+        order by a.start_time desc
+        limit $${values.length}`,
+      values
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to load appointments." });
+  }
+});
+
 const pad = (value) => String(value).padStart(2, "0");
 
 const formatDateKey = (date) =>
