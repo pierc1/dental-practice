@@ -38,7 +38,7 @@ const toLocalDate = (dateKey) => new Date(`${dateKey}T00:00:00`);
 export default function BookAppointment() {
   const [formData, setFormData] = useState({
     firstName: "",
-    lastInitial: "",
+    lastName: "",
     contactEmail: "",
     contactPhone: "",
     serviceId: "",
@@ -91,6 +91,9 @@ export default function BookAppointment() {
     a.start.localeCompare(b.start)
   );
   const selectedSlot = selectedSlots.find((slot) => slot.start === formData.slotStart);
+  const confirmationTime = formData.slotStart
+    ? format(new Date(formData.slotStart), "h:mm a")
+    : "";
 
   const bookingMutation = useMutation({
     mutationFn: (payload) =>
@@ -127,8 +130,23 @@ export default function BookAppointment() {
       return;
     }
 
-    if (!formData.contactEmail.trim() && !formData.contactPhone.trim()) {
-      setError("Please provide an email or phone number.");
+    if (!formData.lastName.trim()) {
+      setError("Please enter your last name.");
+      return;
+    }
+
+    if (!formData.contactEmail.trim()) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    if (!formData.contactPhone.trim()) {
+      setError("Please enter your phone number.");
+      return;
+    }
+
+    if (!formData.notes.trim()) {
+      setError("Please add a short note.");
       return;
     }
 
@@ -136,7 +154,7 @@ export default function BookAppointment() {
       serviceId: Number(formData.serviceId),
       startTime: formData.slotStart,
       firstName: formData.firstName.trim(),
-      lastInitial: formData.lastInitial.trim(),
+      lastName: formData.lastName.trim(),
       contactEmail: formData.contactEmail.trim() || null,
       contactPhone: formData.contactPhone.trim() || null,
       notes: formData.notes.trim() || null,
@@ -166,7 +184,7 @@ export default function BookAppointment() {
                   <div className="flex items-center gap-3 text-slate-100">
                     <User className="w-5 h-5 text-cyan-200" />
                     <span>
-                      {formData.firstName} {formData.lastInitial}
+                      {formData.firstName} {formData.lastName}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-100">
@@ -184,7 +202,7 @@ export default function BookAppointment() {
                   <div className="flex items-center gap-3 text-slate-100">
                     <Clock className="w-5 h-5 text-cyan-200" />
                     <span>
-                      {selectedSlot ? format(new Date(selectedSlot.start), "h:mm a") : ""}
+                      {confirmationTime}
                     </span>
                   </div>
                 </div>
@@ -194,7 +212,7 @@ export default function BookAppointment() {
                   setSubmitted(false);
                   setFormData({
                     firstName: "",
-                    lastInitial: "",
+                    lastName: "",
                     contactEmail: "",
                     contactPhone: "",
                     serviceId: "",
@@ -267,14 +285,15 @@ export default function BookAppointment() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="last_initial">Last Initial</Label>
+                      <Label htmlFor="last_name">Last Name</Label>
                       <Input
-                        id="last_initial"
-                        value={formData.lastInitial}
+                        id="last_name"
+                        value={formData.lastName}
                         onChange={(event) =>
-                          setFormData({ ...formData, lastInitial: event.target.value })
+                          setFormData({ ...formData, lastName: event.target.value })
                         }
-                        placeholder="P"
+                        placeholder="Smith"
+                        required
                         className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
                       />
                     </div>
@@ -288,6 +307,7 @@ export default function BookAppointment() {
                           setFormData({ ...formData, contactEmail: event.target.value })
                         }
                         placeholder="alex@example.com"
+                        required
                         className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
                       />
                     </div>
@@ -301,9 +321,10 @@ export default function BookAppointment() {
                           setFormData({ ...formData, contactPhone: event.target.value })
                         }
                         placeholder="(555) 123-4567"
+                        required
                         className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
                       />
-                      <p className="mt-2 text-xs text-slate-400">Provide at least one contact method.</p>
+                      <p className="mt-2 text-xs text-slate-400">Email and phone are required.</p>
                     </div>
                   </div>
                 </div>
@@ -425,6 +446,7 @@ export default function BookAppointment() {
                       setFormData({ ...formData, notes: event.target.value })
                     }
                     placeholder="Anything else we should know before we reach out?"
+                    required
                     className="mt-2 h-32 bg-white border-slate-300 text-black placeholder:text-slate-500"
                   />
                 </div>

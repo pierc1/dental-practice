@@ -208,21 +208,27 @@ app.post("/api/appointments", async (req, res) => {
       serviceId,
       startTime,
       firstName,
-      lastInitial,
+      lastName,
       contactEmail,
       contactPhone,
       notes,
     } = req.body || {};
 
-    if (!serviceId || !startTime || !firstName) {
+    if (!serviceId || !startTime || !firstName || !lastName) {
       return res.status(400).json({
-        message: "serviceId, startTime, and firstName are required.",
+        message: "serviceId, startTime, firstName, and lastName are required.",
       });
     }
 
-    if (!contactEmail && !contactPhone) {
+    if (!contactEmail || !contactPhone) {
       return res.status(400).json({
-        message: "Provide at least one contact method (email or phone).",
+        message: "Both contactEmail and contactPhone are required.",
+      });
+    }
+
+    if (!notes) {
+      return res.status(400).json({
+        message: "notes are required.",
       });
     }
 
@@ -317,7 +323,7 @@ app.post("/api/appointments", async (req, res) => {
         requestedStart.toISOString(),
         requestedEnd.toISOString(),
         firstName,
-        lastInitial || null,
+        lastName || null,
         contactEmail || null,
         contactPhone || null,
         notes || null,
@@ -328,7 +334,8 @@ app.post("/api/appointments", async (req, res) => {
       serviceName,
       startTime: insertResult.rows[0].start_time,
       firstName,
-      lastInitial,
+      lastName,
+      contactPhone,
     };
 
     let emailStatus = null;

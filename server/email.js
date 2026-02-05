@@ -18,19 +18,25 @@ const formatTime = (isoString) => {
   });
 };
 
-const formatName = (firstName, lastInitial) => {
+const formatName = (firstName, lastName) => {
   const trimmedFirst = (firstName || "").trim();
-  const trimmedLast = (lastInitial || "").trim();
-  return trimmedLast ? `${trimmedFirst} ${trimmedLast}.` : trimmedFirst;
+  const trimmedLast = (lastName || "").trim();
+  return trimmedLast ? `${trimmedFirst} ${trimmedLast}` : trimmedFirst;
 };
 
 export const canSendEmail = () => Boolean(resendClient && resendFrom);
 
-export const sendStaffNotification = async ({ serviceName, startTime, firstName, lastInitial }) => {
+export const sendStaffNotification = async ({
+  serviceName,
+  startTime,
+  firstName,
+  lastName,
+  contactPhone,
+}) => {
   if (!resendClient || !resendFrom || !staffEmail) return { skipped: true };
 
   const formattedTime = formatTime(startTime);
-  const patientName = formatName(firstName, lastInitial);
+  const patientName = formatName(firstName, lastName);
 
   return resendClient.emails.send({
     from: resendFrom,
@@ -42,6 +48,7 @@ export const sendStaffNotification = async ({ serviceName, startTime, firstName,
         <li><strong>Patient:</strong> ${patientName || "New patient"}</li>
         <li><strong>Service:</strong> ${serviceName || "General appointment"}</li>
         <li><strong>Requested time:</strong> ${formattedTime}</li>
+        <li><strong>Phone number:</strong> ${contactPhone || "Not provided"}</li>
       </ul>
       <p>Please log in to confirm the appointment.</p>
     `,
@@ -53,12 +60,12 @@ export const sendPatientConfirmation = async ({
   serviceName,
   startTime,
   firstName,
-  lastInitial,
+  lastName,
 }) => {
   if (!resendClient || !resendFrom || !patientEmail) return { skipped: true };
 
   const formattedTime = formatTime(startTime);
-  const patientName = formatName(firstName, lastInitial);
+  const patientName = formatName(firstName, lastName);
 
   return resendClient.emails.send({
     from: resendFrom,
