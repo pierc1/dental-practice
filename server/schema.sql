@@ -49,8 +49,56 @@ create table if not exists appointments (
   check ((contact_email is not null) or (contact_phone is not null))
 );
 
+create table if not exists blocked_periods (
+  id bigserial primary key,
+  start_time timestamptz not null,
+  end_time timestamptz not null,
+  reason text,
+  created_at timestamptz not null default now(),
+  check (end_time > start_time)
+);
+
 create unique index if not exists appointments_unique_start_time
   on appointments (start_time);
 
 create index if not exists appointments_start_time_idx
   on appointments (start_time);
+
+create index if not exists blocked_periods_start_time_idx
+  on blocked_periods (start_time);
+
+create index if not exists blocked_periods_end_time_idx
+  on blocked_periods (end_time);
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'appointments_no_overlap'
+  ) then
+    alter table appointments
+      add constraint appointments_no_overlap
+      exclude using gist (
+        tstzrange(start_time, end_time, '[)') with &&
+      )
+      where (status <> 'cancelled');
+  end if;
+end
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'blocked_periods_no_overlap'
+  ) then
+    alter table blocked_periods
+      add constraint blocked_periods_no_overlap
+      exclude using gist (
+        tstzrange(start_time, end_time, '[)') with &&
+      );
+  end if;
+end
+$$;

@@ -6,6 +6,7 @@ import Services from '../Pages/Services'
 import Team from '../Pages/Team'
 import BookAppointment from '../Pages/BookAppointment'
 import AdminAppointments from '../Pages/AdminAppointments'
+import AdminBlockedPeriods from '../Pages/AdminBlockedPeriods'
 import { ROUTES } from '@/config/siteConfig'
 
 function withLayout(Component, currentPageName) {
@@ -41,6 +42,10 @@ export default function App() {
       <Route
         path="/admin/appointments"
         element={withLayout(AdminAppointments, 'Admin')}
+      />
+      <Route
+        path="/admin/blocked-periods"
+        element={withLayout(AdminBlockedPeriods, 'Admin')}
       />
       <Route path="*" element={withLayout(Home, 'Home')} />
     </Routes>

@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -9,11 +10,278 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5050;
 
-app.use(cors());
+const parseAllowedOrigins = () => {
+  const configured = (process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (configured.length > 0) {
+    return configured;
+  }
+
+  return ["http://localhost:5173", "http://127.0.0.1:5173"];
+};
+
+const allowedOrigins = new Set(parseAllowedOrigins());
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error("CORS_NOT_ALLOWED"));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
+app.set("trust proxy", 1);
+
+app.use((error, req, res, next) => {
+  if (error?.message === "CORS_NOT_ALLOWED") {
+    res.status(403).json({ message: "Origin not allowed by CORS." });
+    return;
+  }
+  next(error);
+});
+
+const getClientIp = (req) => {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (typeof forwardedFor === "string" && forwardedFor.length > 0) {
+    return forwardedFor.split(",")[0].trim();
+  }
+  return req.ip || req.socket?.remoteAddress || "unknown";
+};
+
+const cleanupExpiredEntries = (store, now) => {
+  for (const [key, value] of store.entries()) {
+    if (value.resetAt <= now || value.expiresAt <= now) {
+      store.delete(key);
+    }
+  }
+};
+
+const createRateLimiter = ({ windowMs, max, keyPrefix }) => {
+  const hits = new Map();
+
+  return (req, res, next) => {
+    const now = Date.now();
+    if (hits.size > 2000) {
+      cleanupExpiredEntries(hits, now);
+    }
+
+    const key = `${keyPrefix}:${getClientIp(req)}`;
+    const existing = hits.get(key);
+
+    if (!existing || existing.resetAt <= now) {
+      hits.set(key, { count: 1, resetAt: now + windowMs });
+      next();
+      return;
+    }
+
+    existing.count += 1;
+
+    if (existing.count > max) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((existing.resetAt - now) / 1000)
+      );
+      res.setHeader("Retry-After", String(retryAfterSeconds));
+      res.status(429).json({ message: "Too many requests. Please try again shortly." });
+      return;
+    }
+
+    next();
+  };
+};
+
+const adminRouteRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  keyPrefix: "admin-route",
+});
+
+const adminLoginRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 12,
+  keyPrefix: "admin-login",
+});
+
+const ADMIN_SESSION_COOKIE = "admin_session";
+const adminSessionTtlMinutes = Number(process.env.ADMIN_SESSION_TTL_MINUTES) || 30;
+const adminSessionTtlMs = adminSessionTtlMinutes * 60 * 1000;
+const adminSessions = new Map();
+
+const adminCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  maxAge: adminSessionTtlMs,
+  path: "/api",
+};
+
+const parseCookies = (cookieHeader = "") => {
+  if (!cookieHeader) return {};
+
+  return cookieHeader.split(";").reduce((acc, cookieSegment) => {
+    const separatorIndex = cookieSegment.indexOf("=");
+    if (separatorIndex === -1) return acc;
+
+    const key = cookieSegment.slice(0, separatorIndex).trim();
+    const value = cookieSegment.slice(separatorIndex + 1).trim();
+
+    if (!key) return acc;
+
+    try {
+      acc[key] = decodeURIComponent(value);
+    } catch {
+      acc[key] = value;
+    }
+
+    return acc;
+  }, {});
+};
+
+const isAdminConfigured = () =>
+  typeof process.env.ADMIN_PASSWORD === "string" &&
+  process.env.ADMIN_PASSWORD.trim().length > 0;
+
+const ensureAdminConfigured = (res) => {
+  if (isAdminConfigured()) return true;
+  res.status(500).json({ message: "Admin authentication is not configured." });
+  return false;
+};
+
+const getAdminSessionToken = (req) => {
+  const cookies = parseCookies(req.headers.cookie || "");
+  return cookies[ADMIN_SESSION_COOKIE] || null;
+};
+
+const clearAdminSession = (res, token) => {
+  if (token) {
+    adminSessions.delete(token);
+  }
+  res.clearCookie(ADMIN_SESSION_COOKIE, {
+    path: adminCookieOptions.path,
+    sameSite: adminCookieOptions.sameSite,
+    secure: adminCookieOptions.secure,
+  });
+};
+
+const createAdminSession = (res) => {
+  const token = crypto.randomBytes(32).toString("hex");
+  adminSessions.set(token, { expiresAt: Date.now() + adminSessionTtlMs });
+  res.cookie(ADMIN_SESSION_COOKIE, token, adminCookieOptions);
+};
+
+const requireAdminAuth = (req, res) => {
+  if (!ensureAdminConfigured(res)) return false;
+
+  const now = Date.now();
+  if (adminSessions.size > 2000) {
+    cleanupExpiredEntries(adminSessions, now);
+  }
+
+  const token = getAdminSessionToken(req);
+  if (!token) {
+    res.status(401).json({ message: "Unauthorized." });
+    return false;
+  }
+
+  const session = adminSessions.get(token);
+  if (!session || session.expiresAt <= now) {
+    clearAdminSession(res, token);
+    res.status(401).json({ message: "Unauthorized." });
+    return false;
+  }
+
+  session.expiresAt = now + adminSessionTtlMs;
+  return true;
+};
+
+const pad = (value) => String(value).padStart(2, "0");
+
+const formatDateKey = (date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+const parseDateParam = (value) => {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const [, year, month, day] = match;
+  return new Date(Number(year), Number(month) - 1, Number(day), 0, 0, 0, 0);
+};
+
+const parseDateTimeValue = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+};
+
+const addDays = (date, days) => {
+  const next = new Date(date.getTime());
+  next.setDate(next.getDate() + days);
+  return next;
+};
+
+const buildDateWithTime = (date, timeValue) => {
+  const [hh, mm, ss] = String(timeValue).split(":");
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    Number(hh || 0),
+    Number(mm || 0),
+    Number(ss || 0),
+    0
+  );
+};
+
+const hasTimeRangeConflict = (rangeStart, rangeEnd, existingRanges) =>
+  existingRanges.some(
+    (range) => rangeStart < range.end && rangeEnd > range.start
+  );
+
+const minutesBetween = (a, b) => Math.round((b.getTime() - a.getTime()) / 60000);
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "appointments-api" });
+});
+
+app.post("/api/admin/login", adminLoginRateLimiter, async (req, res) => {
+  try {
+    if (!ensureAdminConfigured(res)) return;
+
+    const password = String(req.body?.password || "");
+    const expectedPassword = String(process.env.ADMIN_PASSWORD || "");
+
+    if (!password || password !== expectedPassword) {
+      res.status(401).json({ message: "Invalid admin password." });
+      return;
+    }
+
+    createAdminSession(res);
+    res.json({ ok: true, sessionTtlMinutes: adminSessionTtlMinutes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to log in." });
+  }
+});
+
+app.post("/api/admin/logout", adminRouteRateLimiter, (req, res) => {
+  const token = getAdminSessionToken(req);
+  clearAdminSession(res, token);
+  res.status(204).send();
+});
+
+app.get("/api/admin/session", adminRouteRateLimiter, (req, res) => {
+  if (!requireAdminAuth(req, res)) return;
+  res.json({ authenticated: true, sessionTtlMinutes: adminSessionTtlMinutes });
 });
 
 app.get("/api/services", async (req, res) => {
@@ -28,13 +296,9 @@ app.get("/api/services", async (req, res) => {
   }
 });
 
-app.get("/api/appointments", async (req, res) => {
+app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
   try {
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    const suppliedPassword = req.headers["x-admin-password"];
-    if (adminPassword && suppliedPassword !== adminPassword) {
-      return res.status(401).json({ message: "Unauthorized." });
-    }
+    if (!requireAdminAuth(req, res)) return;
 
     const { q, start, end, status, serviceId, limit } = req.query;
     const filters = [];
@@ -106,37 +370,129 @@ app.get("/api/appointments", async (req, res) => {
   }
 });
 
-const pad = (value) => String(value).padStart(2, "0");
+app.get("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
+  try {
+    if (!requireAdminAuth(req, res)) return;
 
-const formatDateKey = (date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    const { start, end, limit } = req.query;
+    const filters = [];
+    const values = [];
 
-const parseDateParam = (value) => {
-  if (!value) return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return null;
-  const [, year, month, day] = match;
-  return new Date(Number(year), Number(month) - 1, Number(day), 0, 0, 0, 0);
-};
+    const startDate = parseDateParam(start);
+    const endDate = parseDateParam(end);
 
-const addDays = (date, days) => {
-  const next = new Date(date.getTime());
-  next.setDate(next.getDate() + days);
-  return next;
-};
+    if (startDate) {
+      values.push(startDate.toISOString());
+      filters.push(`start_time >= $${values.length}`);
+    }
 
-const buildDateWithTime = (date, timeValue) => {
-  const [hh, mm, ss] = String(timeValue).split(":");
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    Number(hh || 0),
-    Number(mm || 0),
-    Number(ss || 0),
-    0
-  );
-};
+    if (endDate) {
+      const endExclusive = addDays(endDate, 1);
+      values.push(endExclusive.toISOString());
+      filters.push(`start_time < $${values.length}`);
+    }
+
+    const whereClause = filters.length ? `where ${filters.join(" and ")}` : "";
+    const safeLimit = Math.min(Number(limit) || 200, 500);
+    values.push(safeLimit);
+
+    const result = await query(
+      `select id, start_time, end_time, reason, created_at
+       from blocked_periods
+       ${whereClause}
+       order by start_time asc
+       limit $${values.length}`,
+      values
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to load blocked periods." });
+  }
+});
+
+app.post("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
+  try {
+    if (!requireAdminAuth(req, res)) return;
+
+    const { startTime, endTime, reason } = req.body || {};
+    const blockStart = parseDateTimeValue(startTime);
+    const blockEnd = parseDateTimeValue(endTime);
+
+    if (!blockStart || !blockEnd) {
+      return res.status(400).json({ message: "Valid startTime and endTime are required." });
+    }
+
+    if (blockEnd <= blockStart) {
+      return res.status(400).json({ message: "endTime must be after startTime." });
+    }
+
+    const appointmentConflictResult = await query(
+      `select id
+       from appointments
+       where status <> 'cancelled'
+         and start_time < $2
+         and end_time > $1
+       limit 1`,
+      [blockStart.toISOString(), blockEnd.toISOString()]
+    );
+
+    if (appointmentConflictResult.rowCount > 0) {
+      return res.status(409).json({
+        message: "Cannot block this time range because an appointment already exists.",
+      });
+    }
+
+    const blockConflictResult = await query(
+      `select id
+       from blocked_periods
+       where start_time < $2
+         and end_time > $1
+       limit 1`,
+      [blockStart.toISOString(), blockEnd.toISOString()]
+    );
+
+    if (blockConflictResult.rowCount > 0) {
+      return res.status(409).json({ message: "This time range is already blocked." });
+    }
+
+    const insertResult = await query(
+      `insert into blocked_periods (start_time, end_time, reason)
+       values ($1, $2, $3)
+       returning id, start_time, end_time, reason, created_at`,
+      [blockStart.toISOString(), blockEnd.toISOString(), reason?.trim() || null]
+    );
+
+    res.status(201).json(insertResult.rows[0]);
+  } catch (error) {
+    if (error?.code === "23P01") {
+      return res.status(409).json({ message: "This time range is already blocked." });
+    }
+    console.error(error);
+    res.status(500).json({ message: "Failed to create blocked period." });
+  }
+});
+
+app.delete("/api/blocked-periods/:id", adminRouteRateLimiter, async (req, res) => {
+  try {
+    if (!requireAdminAuth(req, res)) return;
+
+    const deleteResult = await query(
+      "delete from blocked_periods where id = $1 returning id",
+      [req.params.id]
+    );
+
+    if (deleteResult.rowCount === 0) {
+      return res.status(404).json({ message: "Blocked period not found." });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete blocked period." });
+  }
+});
 
 app.get("/api/availability", async (req, res) => {
   try {
@@ -187,16 +543,32 @@ app.get("/api/availability", async (req, res) => {
 
     const endDateExclusive = addDays(endDate, 1);
     const appointmentsResult = await query(
-      "select start_time from appointments where start_time >= $1 and start_time < $2",
+      `select start_time, end_time
+       from appointments
+       where status <> 'cancelled'
+         and start_time < $2
+         and end_time > $1`,
       [startDate.toISOString(), endDateExclusive.toISOString()]
     );
 
-    const bookedStarts = new Set(
-      appointmentsResult.rows.map((row) => new Date(row.start_time).getTime())
+    const blockedPeriodsResult = await query(
+      `select start_time, end_time
+       from blocked_periods
+       where start_time < $2
+         and end_time > $1`,
+      [startDate.toISOString(), endDateExclusive.toISOString()]
     );
 
+    const unavailableRanges = [
+      ...appointmentsResult.rows,
+      ...blockedPeriodsResult.rows,
+    ].map((row) => ({
+      start: new Date(row.start_time),
+      end: new Date(row.end_time),
+    }));
+
     const slots = [];
-    const today = new Date();
+    const now = new Date();
 
     for (
       let cursor = new Date(startDate.getTime());
@@ -248,11 +620,11 @@ app.get("/api/availability", async (req, res) => {
           const slotEnd = new Date(slotStart.getTime() + slotDuration * 60000);
           if (slotEnd > windowEnd) break;
 
-          if (slotStart.getTime() < today.getTime()) {
+          if (slotStart.getTime() < now.getTime()) {
             continue;
           }
 
-          if (bookedStarts.has(slotStart.getTime())) {
+          if (hasTimeRangeConflict(slotStart, slotEnd, unavailableRanges)) {
             continue;
           }
 
@@ -277,8 +649,6 @@ app.get("/api/availability", async (req, res) => {
     res.status(500).json({ message: "Failed to generate availability." });
   }
 });
-
-const minutesBetween = (a, b) => Math.round((b.getTime() - a.getTime()) / 60000);
 
 app.post("/api/appointments", async (req, res) => {
   try {
@@ -390,6 +760,33 @@ app.post("/api/appointments", async (req, res) => {
       return res.status(400).json({ message: "Selected time is not available." });
     }
 
+    const overlappingAppointmentResult = await query(
+      `select id
+       from appointments
+       where status <> 'cancelled'
+         and start_time < $2
+         and end_time > $1
+       limit 1`,
+      [requestedStart.toISOString(), requestedEnd.toISOString()]
+    );
+
+    if (overlappingAppointmentResult.rowCount > 0) {
+      return res.status(409).json({ message: "This time slot is already booked." });
+    }
+
+    const blockedPeriodConflictResult = await query(
+      `select id
+       from blocked_periods
+       where start_time < $2
+         and end_time > $1
+       limit 1`,
+      [requestedStart.toISOString(), requestedEnd.toISOString()]
+    );
+
+    if (blockedPeriodConflictResult.rowCount > 0) {
+      return res.status(409).json({ message: "This time range is blocked by the admin." });
+    }
+
     const insertResult = await query(
       `insert into appointments
         (service_id, start_time, end_time, first_name, last_initial, contact_email, contact_phone, notes)
@@ -440,7 +837,7 @@ app.post("/api/appointments", async (req, res) => {
       emailStatus,
     });
   } catch (error) {
-    if (error?.code === "23505") {
+    if (error?.code === "23505" || error?.code === "23P01") {
       return res.status(409).json({ message: "This time slot is already booked." });
     }
     console.error(error);
