@@ -407,6 +407,11 @@ app.get("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
+    if (error?.code === "42P01") {
+      return res.status(500).json({
+        message: "Blocked-time table is missing. Apply the latest server/schema.sql and retry.",
+      });
+    }
     console.error(error);
     res.status(500).json({ message: "Failed to load blocked periods." });
   }
@@ -468,6 +473,16 @@ app.post("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
   } catch (error) {
     if (error?.code === "23P01") {
       return res.status(409).json({ message: "This time range is already blocked." });
+    }
+    if (error?.code === "42P01") {
+      return res.status(500).json({
+        message: "Blocked-time table is missing. Apply the latest server/schema.sql and retry.",
+      });
+    }
+    if (error?.code === "42501") {
+      return res.status(500).json({
+        message: "Database permission denied for blocked-time writes. Check your DB role privileges.",
+      });
     }
     console.error(error);
     res.status(500).json({ message: "Failed to create blocked period." });

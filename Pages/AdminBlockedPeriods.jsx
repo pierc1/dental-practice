@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
+const DEFAULT_BLOCK_START_TIME = "09:00";
+const DEFAULT_BLOCK_END_TIME = "17:00";
 
 const fetchJson = async (url, options) => {
   const response = await fetch(url, options);
@@ -38,13 +40,14 @@ export default function AdminBlockedPeriods() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [authError, setAuthError] = useState("");
   const [blockError, setBlockError] = useState("");
+  const todayKey = format(new Date(), "yyyy-MM-dd");
   const [filters, setFilters] = useState({
-    startDate: format(new Date(), "yyyy-MM-dd"),
-    endDate: format(addDays(new Date(), 30), "yyyy-MM-dd"),
+    startDate: todayKey,
+    endDate: todayKey,
   });
   const [blockForm, setBlockForm] = useState({
-    startTime: "",
-    endTime: "",
+    startTime: DEFAULT_BLOCK_START_TIME,
+    endTime: DEFAULT_BLOCK_END_TIME,
     reason: "",
   });
 
@@ -100,6 +103,12 @@ export default function AdminBlockedPeriods() {
     }
   }, [error]);
 
+  const displayErrorMessage =
+    blockError ||
+    (error && !error.message?.toLowerCase().includes("unauthorized")
+      ? error.message
+      : "");
+
   const createBlockedPeriodMutation = useMutation({
     mutationFn: (payload) =>
       fetchAdminJson(`${API_URL}/api/blocked-periods`, {
@@ -109,7 +118,11 @@ export default function AdminBlockedPeriods() {
       }),
     onSuccess: () => {
       setBlockError("");
-      setBlockForm({ startTime: "", endTime: "", reason: "" });
+      setBlockForm({
+        startTime: DEFAULT_BLOCK_START_TIME,
+        endTime: DEFAULT_BLOCK_END_TIME,
+        reason: "",
+      });
       queryClient.invalidateQueries({ queryKey: ["blocked-periods"] });
     },
     onError: (mutationError) => {
@@ -182,16 +195,31 @@ export default function AdminBlockedPeriods() {
   const handleCreateBlockedPeriod = () => {
     setBlockError("");
 
-    const parsedStart = new Date(blockForm.startTime);
-    const parsedEnd = new Date(blockForm.endTime);
+    if (!filters.startDate || !filters.endDate) {
+      setBlockError("Please select start and end dates.");
+      return;
+    }
 
-    if (!blockForm.startTime || Number.isNaN(parsedStart.getTime())) {
+    if (!blockForm.startTime) {
       setBlockError("Please enter a valid block start time.");
       return;
     }
 
-    if (!blockForm.endTime || Number.isNaN(parsedEnd.getTime())) {
+    if (!blockForm.endTime) {
       setBlockError("Please enter a valid block end time.");
+      return;
+    }
+
+    const parsedStart = new Date(`${filters.startDate}T${blockForm.startTime}:00`);
+    const parsedEnd = new Date(`${filters.endDate}T${blockForm.endTime}:00`);
+
+    if (Number.isNaN(parsedStart.getTime())) {
+      setBlockError("Please enter a valid block start date/time.");
+      return;
+    }
+
+    if (Number.isNaN(parsedEnd.getTime())) {
+      setBlockError("Please enter a valid block end date/time.");
       return;
     }
 
@@ -310,10 +338,10 @@ export default function AdminBlockedPeriods() {
 
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="block_start">Start</Label>
+                  <Label htmlFor="block_start_time">Start time</Label>
                   <Input
-                    id="block_start"
-                    type="datetime-local"
+                    id="block_start_time"
+                    type="time"
                     value={blockForm.startTime}
                     onChange={(event) =>
                       setBlockForm((current) => ({ ...current, startTime: event.target.value }))
@@ -322,10 +350,10 @@ export default function AdminBlockedPeriods() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="block_end">End</Label>
+                  <Label htmlFor="block_end_time">End time</Label>
                   <Input
-                    id="block_end"
-                    type="datetime-local"
+                    id="block_end_time"
+                    type="time"
                     value={blockForm.endTime}
                     onChange={(event) =>
                       setBlockForm((current) => ({ ...current, endTime: event.target.value }))
@@ -347,15 +375,9 @@ export default function AdminBlockedPeriods() {
                 </div>
               </div>
 
-              {blockError && (
+              {displayErrorMessage && (
                 <Alert variant="destructive" className="bg-red-500/10 text-white border-red-500/30">
-                  <AlertDescription>{blockError}</AlertDescription>
-                </Alert>
-              )}
-
-              {error && !error.message?.toLowerCase().includes("unauthorized") && (
-                <Alert variant="destructive" className="bg-red-500/10 text-white border-red-500/30">
-                  <AlertDescription>{error.message}</AlertDescription>
+                  <AlertDescription>{displayErrorMessage}</AlertDescription>
                 </Alert>
               )}
 
