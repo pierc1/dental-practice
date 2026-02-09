@@ -8,7 +8,12 @@
     "build": "vite build",
     "preview": "vite preview --open",
     "dev:server": "node --watch server/index.js",
-    "start:server": "node server/index.js"
+    "start:server": "node server/index.js",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:migrate": "node scripts/run-sql-file.mjs server/schema.sql",
+    "db:seed": "node scripts/run-sql-file.mjs server/seed.sql",
+    "db:setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.16",
