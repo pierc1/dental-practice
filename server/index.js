@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { query } from "./db.js";
-import { sendPatientConfirmation, sendStaffNotification, canSendEmail } from "./email.js";
+import { sendPatientConfirmation, sendStaffNotification } from "./email.js";
 
 dotenv.config();
 
@@ -248,6 +248,13 @@ const hasTimeRangeConflict = (rangeStart, rangeEnd, existingRanges) =>
   );
 
 const minutesBetween = (a, b) => Math.round((b.getTime() - a.getTime()) / 60000);
+
+const summarizeEmailResultForLogs = (result) => ({
+  status: result?.status || "failed",
+  reason: result?.reason || null,
+  messageId: result?.messageId || null,
+  error: result?.error || null,
+});
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "appointments-api" });
@@ -828,25 +835,53 @@ app.post("/api/appointments", async (req, res) => {
       contactPhone,
     };
 
-    let emailStatus = null;
-    if (canSendEmail()) {
-      try {
-        const [staffResult, patientResult] = await Promise.allSettled([
-          sendStaffNotification(appointmentPayload),
-          sendPatientConfirmation({
-            ...appointmentPayload,
-            patientEmail: contactEmail,
-          }),
-        ]);
-        emailStatus = { staff: staffResult.status, patient: patientResult.status };
-      } catch (emailError) {
-        console.error("Email send failed:", emailError);
-        emailStatus = { error: true };
-      }
+    const appointmentId = insertResult.rows[0].id;
+    let emailStatus = {
+      staff: null,
+      patient: null,
+    };
+
+    try {
+      const [staffResult, patientResult] = await Promise.all([
+        sendStaffNotification(appointmentPayload),
+        sendPatientConfirmation({
+          ...appointmentPayload,
+          patientEmail: contactEmail,
+        }),
+      ]);
+
+      emailStatus = {
+        staff: staffResult,
+        patient: patientResult,
+      };
+    } catch (emailError) {
+      console.error("Unexpected email processing failure:", emailError);
+      emailStatus = {
+        staff: {
+          recipient: "staff",
+          status: "failed",
+          reason: "unexpected_processing_error",
+          messageId: null,
+          error: emailError?.message || "Unexpected email processing error.",
+        },
+        patient: {
+          recipient: "patient",
+          status: "failed",
+          reason: "unexpected_processing_error",
+          messageId: null,
+          error: emailError?.message || "Unexpected email processing error.",
+        },
+      };
     }
 
+    console.info("Appointment email observability", {
+      appointmentId,
+      staff: summarizeEmailResultForLogs(emailStatus.staff),
+      patient: summarizeEmailResultForLogs(emailStatus.patient),
+    });
+
     res.status(201).json({
-      id: insertResult.rows[0].id,
+      id: appointmentId,
       startTime: insertResult.rows[0].start_time,
       endTime: insertResult.rows[0].end_time,
       emailStatus,

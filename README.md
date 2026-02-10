@@ -168,6 +168,8 @@ Admin/authenticated:
 - Email sending is optional for local demos.
 - If `RESEND_API_KEY` or `RESEND_FROM` is missing, appointment creation still succeeds and email sending is skipped.
 - Staff emails also require `STAFF_EMAIL`.
+- Appointment API responses include per-recipient email outcomes as `sent`, `skipped`, or `failed`.
+- Server logs include per-recipient Resend `messageId` values when available.
 - Use `RESEND_FROM=onboarding@resend.dev` only for Resend test mode.
 - For real sending, configure a verified domain/sender in Resend.
 
@@ -180,7 +182,6 @@ Admin/authenticated:
 
 ## Known Gaps / Next Improvements
 
-- Improve email observability (sent vs skipped vs failed, store provider message IDs)
 - Clarify naming mismatch (`last_initial` column vs API-level `last_name` mapping)
 - Add test layers (API, DB smoke, UI smoke)
 - Add CI pipeline (`npm ci`, lint, test, build)
