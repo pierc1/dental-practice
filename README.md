@@ -137,6 +137,7 @@ npm run db:seed
 
 - `npm run dev` - start Vite dev server
 - `npm run build` - create production build in `dist/`
+- `npm run lint` - run repository lint checks (syntax + merge-marker guard)
 - `npm run preview` - serve production build locally
 - `npm run test` - run all non-DB tests with Vitest
 - `npm run test:api` - run API tests (Supertest + Vitest)
@@ -186,7 +187,7 @@ Admin/authenticated:
 
 ## Known Gaps / Next Improvements
 
-- Add CI pipeline (`npm ci`, lint, test, build)
+- Add deployment pipeline and status badge
 
 ## Project Structure (Key Files)
 
