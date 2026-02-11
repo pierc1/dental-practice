@@ -137,7 +137,8 @@ npm run db:seed
 
 - `npm run dev` - start Vite dev server
 - `npm run build` - create production build in `dist/`
-- `npm run lint` - run repository lint checks (syntax + merge-marker guard)
+- `npm run lint` - run ESLint across the codebase
+- `npm run lint:fix` - auto-fix lint issues when possible
 - `npm run preview` - serve production build locally
 - `npm run test` - run all non-DB tests with Vitest
 - `npm run test:api` - run API tests (Supertest + Vitest)

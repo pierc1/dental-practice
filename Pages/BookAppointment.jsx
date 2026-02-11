@@ -90,7 +90,6 @@ export default function BookAppointment() {
   const selectedSlots = (slotsByDate[formData.appointmentDate] || []).slice().sort((a, b) =>
     a.start.localeCompare(b.start)
   );
-  const selectedSlot = selectedSlots.find((slot) => slot.start === formData.slotStart);
   const confirmationTime = formData.slotStart
     ? format(new Date(formData.slotStart), "h:mm a")
     : "";

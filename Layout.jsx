@@ -6,7 +6,7 @@ import { Phone, Mail, MapPin, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 
-export default function Layout({ children, currentPageName }) {
+export default function Layout({ children }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
