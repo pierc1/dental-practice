@@ -339,7 +339,7 @@ app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
       values.push(`%${q}%`);
       filters.push(
         `(a.first_name ilike $${values.length}
-          or a.last_initial ilike $${values.length}
+          or a.last_name ilike $${values.length}
           or a.contact_email ilike $${values.length}
           or a.contact_phone ilike $${values.length})`
       );
@@ -355,7 +355,7 @@ app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
           a.start_time,
           a.end_time,
           a.first_name,
-          a.last_initial as last_name,
+          a.last_name,
           a.contact_email,
           a.contact_phone,
           a.notes,
@@ -811,7 +811,7 @@ app.post("/api/appointments", async (req, res) => {
 
     const insertResult = await query(
       `insert into appointments
-        (service_id, start_time, end_time, first_name, last_initial, contact_email, contact_phone, notes)
+        (service_id, start_time, end_time, first_name, last_name, contact_email, contact_phone, notes)
        values
         ($1, $2, $3, $4, $5, $6, $7, $8)
        returning id, start_time, end_time`,

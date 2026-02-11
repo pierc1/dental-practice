@@ -182,7 +182,6 @@ Admin/authenticated:
 
 ## Known Gaps / Next Improvements
 
-- Clarify naming mismatch (`last_initial` column vs API-level `last_name` mapping)
 - Add test layers (API, DB smoke, UI smoke)
 - Add CI pipeline (`npm ci`, lint, test, build)
 

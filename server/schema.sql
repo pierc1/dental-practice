@@ -39,7 +39,7 @@ create table if not exists appointments (
   start_time timestamptz not null,
   end_time timestamptz not null,
   first_name text not null,
-  last_initial text,
+  last_name text,
   contact_email text,
   contact_phone text,
   notes text,
@@ -48,6 +48,46 @@ create table if not exists appointments (
   check (end_time > start_time),
   check ((contact_email is not null) or (contact_phone is not null))
 );
+
+do $$
+begin
+  -- One-time cleanup for local DBs that previously used last_initial.
+  if not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'appointments'
+      and column_name = 'last_name'
+  ) and exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'appointments'
+      and column_name = 'last_initial'
+  ) then
+    alter table appointments rename column last_initial to last_name;
+  end if;
+
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'appointments'
+      and column_name = 'last_name'
+  ) and exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'appointments'
+      and column_name = 'last_initial'
+  ) then
+    update appointments
+    set last_name = coalesce(last_name, last_initial);
+
+    alter table appointments drop column last_initial;
+  end if;
+end
+$$;
 
 create table if not exists blocked_periods (
   id bigserial primary key,
