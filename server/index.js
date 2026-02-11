@@ -895,6 +895,13 @@ app.post("/api/appointments", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`API server running on http://localhost:${port}`);
-});
+export { app };
+
+export const startServer = (listenPort = port) =>
+  app.listen(listenPort, () => {
+    console.log(`API server running on http://localhost:${listenPort}`);
+  });
+
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}

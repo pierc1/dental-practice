@@ -138,6 +138,10 @@ npm run db:seed
 - `npm run dev` - start Vite dev server
 - `npm run build` - create production build in `dist/`
 - `npm run preview` - serve production build locally
+- `npm run test` - run all non-DB tests with Vitest
+- `npm run test:api` - run API tests (Supertest + Vitest)
+- `npm run test:ui` - run UI smoke test (React Testing Library + Vitest)
+- `npm run test:db` - run DB integration smoke test (requires running DB)
 - `npm run dev:server` - run Express API with file watch
 - `npm run start:server` - run Express API without watch
 - `npm run db:up` - start PostgreSQL container via Docker Compose
@@ -182,7 +186,6 @@ Admin/authenticated:
 
 ## Known Gaps / Next Improvements
 
-- Add test layers (API, DB smoke, UI smoke)
 - Add CI pipeline (`npm ci`, lint, test, build)
 
 ## Project Structure (Key Files)
