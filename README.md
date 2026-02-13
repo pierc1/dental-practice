@@ -203,4 +203,4 @@ Small targeted improvements are welcome. Please open an issue or pull request wi
 
 ## License
 
-No license file is currently included. All rights reserved by default until a license is added.
+Licensed under the MIT License. See `LICENSE`.
