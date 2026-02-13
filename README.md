@@ -1,36 +1,38 @@
 # Dental Practice Demo
 
-A portfolio project showing a full-stack appointment booking workflow for a dental office.
+Portfolio full-stack project that implements a dental appointment booking workflow with an admin scheduling interface.
 
-Tech stack:
-- Frontend: Vite + React
-- Backend: Node.js + Express
-- Database: PostgreSQL
-- Email: Resend
+## Overview
 
-## Live Demo
-
-- URL: `ADD-LIVE-DEMO-LINK-HERE`
-- If the demo includes admin pages, provide the demo admin password in your recruiter outreach message (not in this repository).
-
-## What This Project Demonstrates
-
-- Patient appointment booking flow with server-side validation
-- Admin session login and protected admin endpoints
-- Availability generation from recurring schedules + date exceptions
-- Blocked-time management for admins
-- Database-level and API-level overlap protection
+This repository demonstrates:
+- Patient appointment booking with server-side validation
+- Admin login with protected scheduling endpoints
+- Availability generation from recurring weekly hours plus date exceptions
+- Admin blocked-time management
+- Database-level overlap protection for appointments and blocked periods
 - Optional transactional email notifications
 
-## Quick Start (Reviewer Friendly)
+## Tech Stack
+
+- Frontend: React + Vite
+- Backend: Node.js + Express
+- Database: PostgreSQL
+- Email (optional): Resend
+- Tests: Vitest, Supertest, React Testing Library
+
+## Demo Status
+
+No public deployment is configured in this repository yet.
+
+## Quick Start
 
 ### 1. Prerequisites
 
-- Node.js 18+
+- Node.js 18+ (CI runs on Node.js 22)
 - npm 9+
-- Docker Desktop (recommended for one-command DB setup)
+- Docker Desktop (recommended for local PostgreSQL)
 
-### 2. Install dependencies
+### 2. Install
 
 ```bash
 npm install
@@ -42,73 +44,62 @@ npm install
 cp .env.example .env
 ```
 
-Then update `.env` values as needed. The default `DATABASE_URL` in `.env.example` is already set for the Docker database in this repo.
+Update values in `.env` as needed. For local Docker usage, the default `DATABASE_URL` already matches `docker-compose.yml`.
 
-### 4. Start PostgreSQL (one command)
+### 4. Start database
 
 ```bash
 npm run db:up
 ```
 
-### 5. Apply schema and seed data
+### 5. Apply schema and seed
 
 ```bash
 npm run db:setup
 ```
 
-### 6. Run backend + frontend
+### 6. Run API and frontend
 
-Terminal 1 (API):
+Terminal 1:
 
 ```bash
 npm run dev:server
 ```
 
-Terminal 2 (web app):
+Terminal 2:
 
 ```bash
 npm run dev
 ```
 
-Open:
+Local URLs:
 - Frontend: http://localhost:5173
 - API health check: http://localhost:5050/api/health
 
-## No External Accounts Required For Local Review
-
-- You do not need a Supabase account to run this project locally.
-- You do not need a Resend account to run booking flows locally.
-- Email is optional; if Resend env vars are missing, appointment creation still works and email is skipped.
-- Admin pages require only the local `ADMIN_PASSWORD` from your `.env`.
-
 ## Environment Variables
 
-See `.env.example` for defaults.
+Defaults are in `.env.example`.
 
-| Variable | Required | Purpose |
+| Variable | Required | Description |
 |---|---|---|
-| `PORT` | No | API server port (default: `5050`) |
-| `VITE_API_URL` | Yes (frontend) | Base URL for frontend API calls |
-| `ADMIN_PASSWORD` | Yes (admin features) | Password for admin login |
-| `ADMIN_SESSION_TTL_MINUTES` | No | In-memory admin session TTL (default: `30`) |
-| `ALLOWED_ORIGINS` | Yes for multi-origin setups | Comma-separated CORS allowlist |
+| `PORT` | No | API port. Default: `5050` |
+| `VITE_API_URL` | Yes (frontend) | Base URL for API requests from the frontend |
+| `ADMIN_PASSWORD` | Yes (admin routes) | Password for admin login |
+| `ADMIN_SESSION_TTL_MINUTES` | No | In-memory admin session TTL. Default: `30` |
+| `ALLOWED_ORIGINS` | No (for local defaults) | Comma-separated CORS allowlist |
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `RESEND_API_KEY` | Optional | Enables outbound email when set |
-| `RESEND_FROM` | Optional | Verified sender address for Resend |
-| `STAFF_EMAIL` | Optional | Inbox for staff notifications |
-| `DEFAULT_SLOT_MINUTES` | No | Fallback slot size used by availability logic |
+| `RESEND_API_KEY` | Optional | Enables email sending |
+| `RESEND_FROM` | Optional | Sender email used by Resend |
+| `STAFF_EMAIL` | Optional | Recipient for staff notifications |
+| `DEFAULT_SLOT_MINUTES` | No | Fallback slot duration. Default: `30` |
 
-## Database Setup, Migrations, and Seed Data
+## Database Workflow
 
-### Current migration approach
+This project uses SQL files directly (no migration framework):
+- Schema: `server/schema.sql`
+- Seed data: `server/seed.sql`
 
-This demo currently uses SQL files directly instead of a migration framework:
-- Schema source: `server/schema.sql`
-- Seed source: `server/seed.sql`
-
-`server/schema.sql` is mostly idempotent (`create table if not exists`, guarded constraints), so it can be re-applied safely during local development.
-
-### Standard local DB workflow (Docker)
+Common commands:
 
 ```bash
 npm run db:up
@@ -116,43 +107,37 @@ npm run db:migrate
 npm run db:seed
 ```
 
-### Using Supabase instead
+`server/schema.sql` is mostly idempotent (`create table if not exists`, guarded constraints), so re-applying in local development is safe.
 
-This app uses plain PostgreSQL. Supabase is still supported by setting `DATABASE_URL` to your Supabase connection string.
+You can also use an external PostgreSQL instance (for example Supabase) instead of local Docker. Set `DATABASE_URL` to your external connection string, then run:
 
 ```bash
-# with DATABASE_URL pointed at Supabase
 npm run db:migrate
 npm run db:seed
 ```
 
-### Schema highlights
+## Scripts
 
-- `appointments` has overlap protection, start-time uniqueness, and status-aware exclusion rules
-- `blocked_periods` has overlap protection
-- `availability` + `exceptions` drive slot generation
-- Services are active/inactive and duration-based
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Start Vite dev server |
+| `npm run dev:server` | Start Express API in watch mode |
+| `npm run start:server` | Start Express API without watch |
+| `npm run build` | Build frontend into `dist/` |
+| `npm run preview` | Preview production frontend build |
+| `npm run lint` | Run ESLint |
+| `npm run lint:fix` | Auto-fix lint issues |
+| `npm test` | Run default test suite |
+| `npm run test:api` | Run API tests |
+| `npm run test:ui` | Run UI tests |
+| `npm run test:db` | Run DB smoke tests (`RUN_DB_TESTS=1`) |
+| `npm run db:up` | Start PostgreSQL (Docker Compose) |
+| `npm run db:down` | Stop Docker Compose services |
+| `npm run db:migrate` | Apply schema SQL |
+| `npm run db:seed` | Apply seed SQL |
+| `npm run db:setup` | Run migrate + seed |
 
-## Running Scripts
-
-- `npm run dev` - start Vite dev server
-- `npm run build` - create production build in `dist/`
-- `npm run lint` - run ESLint across the codebase
-- `npm run lint:fix` - auto-fix lint issues when possible
-- `npm run preview` - serve production build locally
-- `npm run test` - run all non-DB tests with Vitest
-- `npm run test:api` - run API tests (Supertest + Vitest)
-- `npm run test:ui` - run UI smoke test (React Testing Library + Vitest)
-- `npm run test:db` - run DB integration smoke test (requires running DB)
-- `npm run dev:server` - run Express API with file watch
-- `npm run start:server` - run Express API without watch
-- `npm run db:up` - start PostgreSQL container via Docker Compose
-- `npm run db:down` - stop Docker Compose services
-- `npm run db:migrate` - apply `server/schema.sql` using `DATABASE_URL`
-- `npm run db:seed` - apply `server/seed.sql` using `DATABASE_URL`
-- `npm run db:setup` - run migrate + seed
-
-## API Surface (High Level)
+## API Endpoints (High Level)
 
 Public:
 - `GET /api/health`
@@ -160,7 +145,7 @@ Public:
 - `GET /api/availability`
 - `POST /api/appointments`
 
-Admin/authenticated:
+Admin (cookie-authenticated):
 - `POST /api/admin/login`
 - `POST /api/admin/logout`
 - `GET /api/admin/session`
@@ -169,33 +154,53 @@ Admin/authenticated:
 - `POST /api/blocked-periods`
 - `DELETE /api/blocked-periods/:id`
 
-## Resend Email Notes
+## Testing
 
-- Email sending is optional for local demos.
+- `npm test` runs the default Vitest suite.
+- `npm run test:db` runs only when `RUN_DB_TESTS=1` and requires a reachable PostgreSQL instance.
+- CI workflow (`.github/workflows/ci.yml`) runs lint, tests, build, and DB smoke checks.
+
+## Email Behavior
+
+Resend integration is optional for local review.
 - If `RESEND_API_KEY` or `RESEND_FROM` is missing, appointment creation still succeeds and email sending is skipped.
-- Staff emails also require `STAFF_EMAIL`.
-- Appointment API responses include per-recipient email outcomes as `sent`, `skipped`, or `failed`.
-- Server logs include per-recipient Resend `messageId` values when available.
-- Use `RESEND_FROM=onboarding@resend.dev` only for Resend test mode.
-- For real sending, configure a verified domain/sender in Resend.
+- Staff notifications additionally require `STAFF_EMAIL`.
+- API responses include per-recipient email status (`sent`, `skipped`, `failed`) for observability.
 
-## Reviewer Notes
+## Troubleshooting
 
-- This is a demo portfolio project, not a production healthcare system.
-- Data is not HIPAA-compliant.
-- Admin sessions are in-memory, so they reset on API restart.
-- Rate limiting and validation are present, but infrastructure hardening is intentionally lightweight.
-
-## Known Gaps / Next Improvements
-
-- Add deployment pipeline and status badge
+- `DATABASE_URL is not set`: copy `.env.example` to `.env` and verify `DATABASE_URL`.
+- `Origin not allowed by CORS`: add your frontend origin to `ALLOWED_ORIGINS`.
+- Admin routes return `Unauthorized`: log in first via `POST /api/admin/login`, and ensure `ADMIN_PASSWORD` is set.
+- Port conflicts: change `PORT` (API) or Vite port settings if needed.
 
 ## Project Structure (Key Files)
 
-- `server/index.js` - Express API and scheduling logic
-- `server/db.js` - PostgreSQL pool configuration
-- `server/schema.sql` - schema and DB constraints
-- `server/seed.sql` - initial sample data
-- `server/email.js` - Resend integration
-- `Pages/` - React route/page components
-- `components/ui/` - reusable UI primitives
+- `server/index.js`: Express API and scheduling logic
+- `server/db.js`: PostgreSQL connection layer
+- `server/schema.sql`: schema and database constraints
+- `server/seed.sql`: initial sample data
+- `server/email.js`: Resend integration
+- `Pages/`: top-level React pages/routes
+- `components/ui/`: reusable UI primitives
+- `tests/`: API, UI, and DB smoke tests
+
+## Limitations
+
+- Demo portfolio project, not a production healthcare platform
+- Not HIPAA-compliant
+- Admin sessions are in-memory and reset on API restart
+- Security hardening is intentionally lightweight for demo scope
+
+## Roadmap
+
+- Add deployment pipeline and public demo URL
+- Add CI badge once deployment/repo visibility is finalized
+
+## Contributing
+
+Small targeted improvements are welcome. Please open an issue or pull request with a clear problem statement and testing notes.
+
+## License
+
+No license file is currently included. All rights reserved by default until a license is added.
