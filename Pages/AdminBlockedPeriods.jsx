@@ -8,37 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { checkAdminSession, fetchAdminJson, getApiUrl, logoutAdmin } from "@/api/adminClient";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
 const DEFAULT_BLOCK_START_TIME = "09:00";
 const DEFAULT_BLOCK_END_TIME = "17:00";
-
-const fetchJson = async (url, options) => {
-  const response = await fetch(url, options);
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(payload?.message || "Request failed.");
-  }
-  return payload;
-};
-
-const fetchAdminJson = (url, options = {}) => {
-  const mergedHeaders = { ...(options.headers || {}) };
-  return fetchJson(url, {
-    ...options,
-    credentials: "include",
-    headers: mergedHeaders,
-  });
-};
 
 export default function AdminBlockedPeriods() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [adminPassword, setAdminPassword] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const [authError, setAuthError] = useState("");
   const [blockError, setBlockError] = useState("");
   const todayKey = format(new Date(), "yyyy-MM-dd");
   const [filters, setFilters] = useState({
@@ -56,14 +35,14 @@ export default function AdminBlockedPeriods() {
 
     const checkSession = async () => {
       try {
-        await fetchAdminJson(`${API_URL}/api/admin/session`);
+        await checkAdminSession();
         if (!cancelled) {
           setIsUnlocked(true);
-          setAuthError("");
         }
       } catch {
         if (!cancelled) {
           setIsUnlocked(false);
+          navigate("/admin", { replace: true });
         }
       } finally {
         if (!cancelled) {
@@ -76,7 +55,7 @@ export default function AdminBlockedPeriods() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [navigate]);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -92,16 +71,16 @@ export default function AdminBlockedPeriods() {
     error,
   } = useQuery({
     queryKey: ["blocked-periods", queryString, isUnlocked],
-    queryFn: () => fetchAdminJson(`${API_URL}/api/blocked-periods?${queryString}`),
+    queryFn: () => fetchAdminJson(getApiUrl(`/api/blocked-periods?${queryString}`)),
     enabled: isUnlocked,
   });
 
   useEffect(() => {
     if (error?.message?.toLowerCase().includes("unauthorized")) {
       setIsUnlocked(false);
-      setAuthError("Session expired. Please sign in again.");
+      navigate("/admin", { replace: true });
     }
-  }, [error]);
+  }, [error, navigate]);
 
   const displayErrorMessage =
     blockError ||
@@ -111,7 +90,7 @@ export default function AdminBlockedPeriods() {
 
   const createBlockedPeriodMutation = useMutation({
     mutationFn: (payload) =>
-      fetchAdminJson(`${API_URL}/api/blocked-periods`, {
+      fetchAdminJson(getApiUrl("/api/blocked-periods"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -128,7 +107,7 @@ export default function AdminBlockedPeriods() {
     onError: (mutationError) => {
       if (mutationError?.message?.toLowerCase().includes("unauthorized")) {
         setIsUnlocked(false);
-        setAuthError("Session expired. Please sign in again.");
+        navigate("/admin", { replace: true });
         return;
       }
       setBlockError(mutationError.message || "Failed to create blocked period.");
@@ -137,7 +116,7 @@ export default function AdminBlockedPeriods() {
 
   const deleteBlockedPeriodMutation = useMutation({
     mutationFn: (id) =>
-      fetchAdminJson(`${API_URL}/api/blocked-periods/${id}`, {
+      fetchAdminJson(getApiUrl(`/api/blocked-periods/${id}`), {
         method: "DELETE",
       }),
     onSuccess: () => {
@@ -146,50 +125,22 @@ export default function AdminBlockedPeriods() {
     onError: (mutationError) => {
       if (mutationError?.message?.toLowerCase().includes("unauthorized")) {
         setIsUnlocked(false);
-        setAuthError("Session expired. Please sign in again.");
+        navigate("/admin", { replace: true });
         return;
       }
       setBlockError(mutationError.message || "Failed to delete blocked period.");
     },
   });
 
-  const handleSignIn = async () => {
-    if (!adminPassword.trim()) {
-      setAuthError("Please enter the admin password.");
-      return;
-    }
-
-    setIsSigningIn(true);
-    setAuthError("");
-
-    try {
-      await fetchAdminJson(`${API_URL}/api/admin/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: adminPassword.trim() }),
-      });
-      setIsUnlocked(true);
-      setAdminPassword("");
-      setAuthError("");
-    } catch (signInError) {
-      setAuthError(signInError.message || "Failed to sign in.");
-      setIsUnlocked(false);
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
-
   const handleLogout = async () => {
     try {
-      await fetchAdminJson(`${API_URL}/api/admin/logout`, { method: "POST" });
+      await logoutAdmin();
     } catch {
       // best-effort logout
+    } finally {
+      setIsUnlocked(false);
+      navigate("/admin", { replace: true });
     }
-
-    setIsUnlocked(false);
-    setAdminPassword("");
-    setAuthError("");
-    navigate("/admin/appointments");
   };
 
   const handleCreateBlockedPeriod = () => {
@@ -251,194 +202,165 @@ export default function AdminBlockedPeriods() {
     );
   }
 
+  if (!isUnlocked) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 pt-36 md:pt-40 lg:pt-44 pb-16 text-white">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {!isUnlocked ? (
-          <Card className="border border-white/10 bg-white/5 shadow-xl backdrop-blur max-w-xl mx-auto">
-            <CardHeader className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
-              <CardTitle className="text-2xl">Admin Access</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <div>
-                <Label htmlFor="admin_password">Admin password</Label>
-                <Input
-                  id="admin_password"
-                  type="password"
-                  value={adminPassword}
-                  onChange={(event) => setAdminPassword(event.target.value)}
-                  placeholder="Enter admin password"
-                  className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
-                />
-              </div>
-              {authError && (
-                <Alert variant="destructive" className="bg-red-500/10 text-white border-red-500/30">
-                  <AlertDescription>{authError}</AlertDescription>
-                </Alert>
-              )}
-              <Button
-                type="button"
-                className="w-full bg-white/10 border border-white text-white hover:bg-white/20"
-                onClick={handleSignIn}
-                disabled={isSigningIn}
-              >
-                {isSigningIn ? "Signing in..." : "Continue"}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border border-white/10 bg-white/5 shadow-xl backdrop-blur">
-            <CardHeader className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
-              <CardTitle className="text-2xl">Blocked Time Manager</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  type="button"
-                  className="bg-white/10 border border-white text-white hover:bg-white/20"
-                  onClick={() => navigate("/admin/appointments")}
-                >
-                  Back to appointments
-                </Button>
-                <Button
-                  type="button"
-                  className="bg-transparent border border-white/40 text-white hover:bg-white/10"
-                  onClick={handleLogout}
-                >
-                  Log out
-                </Button>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="filter_start">Start date</Label>
-                  <Input
-                    id="filter_start"
-                    type="date"
-                    value={filters.startDate}
-                    onChange={(event) =>
-                      setFilters((current) => ({ ...current, startDate: event.target.value }))
-                    }
-                    className="mt-2 bg-white border-slate-300 text-black"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="filter_end">End date</Label>
-                  <Input
-                    id="filter_end"
-                    type="date"
-                    value={filters.endDate}
-                    onChange={(event) =>
-                      setFilters((current) => ({ ...current, endDate: event.target.value }))
-                    }
-                    className="mt-2 bg-white border-slate-300 text-black"
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="block_start_time">Start time</Label>
-                  <Input
-                    id="block_start_time"
-                    type="time"
-                    value={blockForm.startTime}
-                    onChange={(event) =>
-                      setBlockForm((current) => ({ ...current, startTime: event.target.value }))
-                    }
-                    className="mt-2 bg-white border-slate-300 text-black"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="block_end_time">End time</Label>
-                  <Input
-                    id="block_end_time"
-                    type="time"
-                    value={blockForm.endTime}
-                    onChange={(event) =>
-                      setBlockForm((current) => ({ ...current, endTime: event.target.value }))
-                    }
-                    className="mt-2 bg-white border-slate-300 text-black"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="block_reason">Reason (optional)</Label>
-                  <Input
-                    id="block_reason"
-                    value={blockForm.reason}
-                    onChange={(event) =>
-                      setBlockForm((current) => ({ ...current, reason: event.target.value }))
-                    }
-                    placeholder="Lunch, provider out, meeting"
-                    className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
-                  />
-                </div>
-              </div>
-
-              {displayErrorMessage && (
-                <Alert variant="destructive" className="bg-red-500/10 text-white border-red-500/30">
-                  <AlertDescription>{displayErrorMessage}</AlertDescription>
-                </Alert>
-              )}
-
+        <Card className="border border-white/10 bg-white/5 shadow-xl backdrop-blur">
+          <CardHeader className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
+            <CardTitle className="text-2xl">Blocked Time Manager</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="flex flex-wrap gap-3">
               <Button
                 type="button"
                 className="bg-white/10 border border-white text-white hover:bg-white/20"
-                onClick={handleCreateBlockedPeriod}
-                disabled={createBlockedPeriodMutation.isPending}
+                onClick={() => navigate("/admin/appointments")}
               >
-                {createBlockedPeriodMutation.isPending ? "Blocking..." : "Block time range"}
+                Back to appointments
               </Button>
+              <Button
+                type="button"
+                className="bg-transparent border border-white/40 text-white hover:bg-white/10"
+                onClick={handleLogout}
+              >
+                Log out
+              </Button>
+            </div>
 
-              {isLoading ? (
-                <div className="space-y-3">
-                  {[...Array(4)].map((_, index) => (
-                    <Skeleton key={index} className="h-10 w-full" />
-                  ))}
-                </div>
-              ) : blockedPeriods.length === 0 ? (
-                <p className="text-slate-300">No blocked periods for this date range.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left text-slate-200">
-                    <thead className="text-xs uppercase text-slate-300 border-b border-white/10">
-                      <tr>
-                        <th className="py-3 pr-4">Start</th>
-                        <th className="py-3 pr-4">End</th>
-                        <th className="py-3 pr-4">Reason</th>
-                        <th className="py-3 pr-4">Action</th>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="filter_start">Start date</Label>
+                <Input
+                  id="filter_start"
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(event) =>
+                    setFilters((current) => ({ ...current, startDate: event.target.value }))
+                  }
+                  className="mt-2 bg-white border-slate-300 text-black"
+                />
+              </div>
+              <div>
+                <Label htmlFor="filter_end">End date</Label>
+                <Input
+                  id="filter_end"
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(event) =>
+                    setFilters((current) => ({ ...current, endDate: event.target.value }))
+                  }
+                  className="mt-2 bg-white border-slate-300 text-black"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="block_start_time">Start time</Label>
+                <Input
+                  id="block_start_time"
+                  type="time"
+                  value={blockForm.startTime}
+                  onChange={(event) =>
+                    setBlockForm((current) => ({ ...current, startTime: event.target.value }))
+                  }
+                  className="mt-2 bg-white border-slate-300 text-black"
+                />
+              </div>
+              <div>
+                <Label htmlFor="block_end_time">End time</Label>
+                <Input
+                  id="block_end_time"
+                  type="time"
+                  value={blockForm.endTime}
+                  onChange={(event) =>
+                    setBlockForm((current) => ({ ...current, endTime: event.target.value }))
+                  }
+                  className="mt-2 bg-white border-slate-300 text-black"
+                />
+              </div>
+              <div>
+                <Label htmlFor="block_reason">Reason (optional)</Label>
+                <Input
+                  id="block_reason"
+                  value={blockForm.reason}
+                  onChange={(event) =>
+                    setBlockForm((current) => ({ ...current, reason: event.target.value }))
+                  }
+                  placeholder="Lunch, provider out, meeting"
+                  className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
+                />
+              </div>
+            </div>
+
+            {displayErrorMessage && (
+              <Alert variant="destructive" className="bg-red-500/10 text-white border-red-500/30">
+                <AlertDescription>{displayErrorMessage}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button
+              type="button"
+              className="bg-white/10 border border-white text-white hover:bg-white/20"
+              onClick={handleCreateBlockedPeriod}
+              disabled={createBlockedPeriodMutation.isPending}
+            >
+              {createBlockedPeriodMutation.isPending ? "Blocking..." : "Block time range"}
+            </Button>
+
+            {isLoading ? (
+              <div className="space-y-3">
+                {[...Array(4)].map((_, index) => (
+                  <Skeleton key={index} className="h-10 w-full" />
+                ))}
+              </div>
+            ) : blockedPeriods.length === 0 ? (
+              <p className="text-slate-300">No blocked periods for this date range.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-slate-200">
+                  <thead className="text-xs uppercase text-slate-300 border-b border-white/10">
+                    <tr>
+                      <th className="py-3 pr-4">Start</th>
+                      <th className="py-3 pr-4">End</th>
+                      <th className="py-3 pr-4">Reason</th>
+                      <th className="py-3 pr-4">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {blockedPeriods.map((period) => (
+                      <tr key={period.id} className="border-b border-white/5">
+                        <td className="py-3 pr-4 whitespace-nowrap">
+                          {format(new Date(period.start_time), "MMM d, yyyy h:mm a")}
+                        </td>
+                        <td className="py-3 pr-4 whitespace-nowrap">
+                          {format(new Date(period.end_time), "MMM d, yyyy h:mm a")}
+                        </td>
+                        <td className="py-3 pr-4">{period.reason || "-"}</td>
+                        <td className="py-3 pr-4">
+                          <Button
+                            type="button"
+                            className="bg-transparent border border-white/40 text-white hover:bg-white/10"
+                            disabled={deleteBlockedPeriodMutation.isPending}
+                            onClick={() => deleteBlockedPeriodMutation.mutate(period.id)}
+                          >
+                            Remove
+                          </Button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {blockedPeriods.map((period) => (
-                        <tr key={period.id} className="border-b border-white/5">
-                          <td className="py-3 pr-4 whitespace-nowrap">
-                            {format(new Date(period.start_time), "MMM d, yyyy h:mm a")}
-                          </td>
-                          <td className="py-3 pr-4 whitespace-nowrap">
-                            {format(new Date(period.end_time), "MMM d, yyyy h:mm a")}
-                          </td>
-                          <td className="py-3 pr-4">{period.reason || "-"}</td>
-                          <td className="py-3 pr-4">
-                            <Button
-                              type="button"
-                              className="bg-transparent border border-white/40 text-white hover:bg-white/10"
-                              disabled={deleteBlockedPeriodMutation.isPending}
-                              onClick={() => deleteBlockedPeriodMutation.mutate(period.id)}
-                            >
-                              Remove
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
+

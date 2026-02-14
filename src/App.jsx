@@ -5,6 +5,7 @@ import Home from '../Pages/Home'
 import Services from '../Pages/Services'
 import Team from '../Pages/Team'
 import BookAppointment from '../Pages/BookAppointment'
+import AdminLogin from '../Pages/AdminLogin'
 import AdminAppointments from '../Pages/AdminAppointments'
 import AdminBlockedPeriods from '../Pages/AdminBlockedPeriods'
 import { ROUTES } from '@/config/siteConfig'
@@ -39,6 +40,10 @@ export default function App() {
           />
         )
       })}
+      <Route
+        path="/admin"
+        element={withLayout(AdminLogin, 'Admin')}
+      />
       <Route
         path="/admin/appointments"
         element={withLayout(AdminAppointments, 'Admin')}

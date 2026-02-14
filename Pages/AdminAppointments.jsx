@@ -9,26 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
-
-const fetchJson = async (url, options) => {
-  const response = await fetch(url, options);
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(payload?.message || "Request failed.");
-  }
-  return payload;
-};
-
-const fetchAdminJson = (url, options = {}) => {
-  const mergedHeaders = { ...(options.headers || {}) };
-  return fetchJson(url, {
-    ...options,
-    credentials: "include",
-    headers: mergedHeaders,
-  });
-};
+import { checkAdminSession, fetchAdminJson, getApiUrl, logoutAdmin } from "@/api/adminClient";
 
 const escapeCsvValue = (value) => {
   if (value === null || value === undefined) return "";
@@ -47,25 +28,22 @@ export default function AdminAppointments() {
     endDate: "",
     status: "all",
   });
-  const [adminPassword, setAdminPassword] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const [authError, setAuthError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
 
     const checkSession = async () => {
       try {
-        await fetchAdminJson(`${API_URL}/api/admin/session`);
+        await checkAdminSession();
         if (!cancelled) {
           setIsUnlocked(true);
-          setAuthError("");
         }
       } catch {
         if (!cancelled) {
           setIsUnlocked(false);
+          navigate("/admin", { replace: true });
         }
       } finally {
         if (!cancelled) {
@@ -78,7 +56,7 @@ export default function AdminAppointments() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [navigate]);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -96,53 +74,26 @@ export default function AdminAppointments() {
     error: appointmentsError,
   } = useQuery({
     queryKey: ["appointments", queryString, isUnlocked],
-    queryFn: () => fetchAdminJson(`${API_URL}/api/appointments?${queryString}`),
+    queryFn: () => fetchAdminJson(getApiUrl(`/api/appointments?${queryString}`)),
     enabled: isUnlocked,
   });
 
   useEffect(() => {
     if (appointmentsError?.message?.toLowerCase().includes("unauthorized")) {
       setIsUnlocked(false);
-      setAuthError("Session expired. Please sign in again.");
+      navigate("/admin", { replace: true });
     }
-  }, [appointmentsError]);
-
-  const handleSignIn = async () => {
-    if (!adminPassword.trim()) {
-      setAuthError("Please enter the admin password.");
-      return;
-    }
-
-    setIsSigningIn(true);
-    setAuthError("");
-
-    try {
-      await fetchAdminJson(`${API_URL}/api/admin/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: adminPassword.trim() }),
-      });
-      setIsUnlocked(true);
-      setAdminPassword("");
-      setAuthError("");
-    } catch (error) {
-      setAuthError(error.message || "Failed to sign in.");
-      setIsUnlocked(false);
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
+  }, [appointmentsError, navigate]);
 
   const handleLogout = async () => {
     try {
-      await fetchAdminJson(`${API_URL}/api/admin/logout`, { method: "POST" });
+      await logoutAdmin();
     } catch {
       // best-effort logout
+    } finally {
+      setIsUnlocked(false);
+      navigate("/admin", { replace: true });
     }
-
-    setIsUnlocked(false);
-    setAdminPassword("");
-    setAuthError("");
   };
 
   const handleExport = () => {
@@ -190,173 +141,144 @@ export default function AdminAppointments() {
     );
   }
 
+  if (!isUnlocked) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 pt-36 md:pt-40 lg:pt-44 pb-16 text-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {!isUnlocked ? (
-          <Card className="border border-white/10 bg-white/5 shadow-xl backdrop-blur max-w-xl mx-auto">
-            <CardHeader className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
-              <CardTitle className="text-2xl">Admin Access</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <div>
-                <Label htmlFor="admin_password">Admin password</Label>
+        <Card className="border border-white/10 bg-white/5 shadow-xl backdrop-blur">
+          <CardHeader className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
+            <CardTitle className="text-2xl">Appointments Admin</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="search">Search</Label>
                 <Input
-                  id="admin_password"
-                  type="password"
-                  value={adminPassword}
-                  onChange={(event) => setAdminPassword(event.target.value)}
-                  placeholder="Enter admin password"
+                  id="search"
+                  value={filters.query}
+                  onChange={(event) => setFilters({ ...filters, query: event.target.value })}
+                  placeholder="Name, email, phone"
                   className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
                 />
               </div>
-              {authError && (
-                <Alert variant="destructive" className="bg-red-500/10 text-white border-red-500/30">
-                  <AlertDescription>{authError}</AlertDescription>
-                </Alert>
-              )}
-              <Button
-                type="button"
-                className="w-full bg-white/10 border border-white text-white hover:bg-white/20"
-                onClick={handleSignIn}
-                disabled={isSigningIn}
-              >
-                {isSigningIn ? "Signing in..." : "Continue"}
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border border-white/10 bg-white/5 shadow-xl backdrop-blur">
-            <CardHeader className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
-              <CardTitle className="text-2xl">Appointments Admin</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <div className="grid md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <Label htmlFor="search">Search</Label>
-                  <Input
-                    id="search"
-                    value={filters.query}
-                    onChange={(event) => setFilters({ ...filters, query: event.target.value })}
-                    placeholder="Name, email, phone"
-                    className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="start">Start date</Label>
-                  <Input
-                    id="start"
-                    type="date"
-                    value={filters.startDate}
-                    onChange={(event) => setFilters({ ...filters, startDate: event.target.value })}
-                    className="mt-2 bg-white border-slate-300 text-black"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="end">End date</Label>
-                  <Input
-                    id="end"
-                    type="date"
-                    value={filters.endDate}
-                    onChange={(event) => setFilters({ ...filters, endDate: event.target.value })}
-                    className="mt-2 bg-white border-slate-300 text-black"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={filters.status}
-                    onValueChange={(value) => setFilters({ ...filters, status: value })}
-                  >
-                    <SelectTrigger className="mt-2 bg-white border-slate-300 text-black">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="booked">Booked</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="md:col-span-1" />
-                <div className="flex items-end gap-3 md:col-span-3">
-                  <Button
-                    type="button"
-                    className="w-full bg-white/10 border border-white text-white hover:bg-white/20"
-                    onClick={() => navigate("/admin/blocked-periods")}
-                  >
-                    Manage blocked time
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full bg-white/10 border border-white text-white hover:bg-white/20"
-                    onClick={handleExport}
-                    disabled={!appointments.length}
-                  >
-                    Export CSV
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full bg-transparent border border-white/40 text-white hover:bg-white/10"
-                    onClick={handleLogout}
-                  >
-                    Log out
-                  </Button>
-                </div>
+              <div>
+                <Label htmlFor="start">Start date</Label>
+                <Input
+                  id="start"
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(event) => setFilters({ ...filters, startDate: event.target.value })}
+                  className="mt-2 bg-white border-slate-300 text-black"
+                />
               </div>
+              <div>
+                <Label htmlFor="end">End date</Label>
+                <Input
+                  id="end"
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(event) => setFilters({ ...filters, endDate: event.target.value })}
+                  className="mt-2 bg-white border-slate-300 text-black"
+                />
+              </div>
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) => setFilters({ ...filters, status: value })}
+                >
+                  <SelectTrigger className="mt-2 bg-white border-slate-300 text-black">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="booked">Booked</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="md:col-span-1" />
+              <div className="flex items-end gap-3 md:col-span-3">
+                <Button
+                  type="button"
+                  className="w-full bg-white/10 border border-white text-white hover:bg-white/20"
+                  onClick={() => navigate("/admin/blocked-periods")}
+                >
+                  Manage blocked time
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full bg-white/10 border border-white text-white hover:bg-white/20"
+                  onClick={handleExport}
+                  disabled={!appointments.length}
+                >
+                  Export CSV
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full bg-transparent border border-white/40 text-white hover:bg-white/10"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </Button>
+              </div>
+            </div>
 
-              {appointmentsError && !appointmentsError.message?.toLowerCase().includes("unauthorized") && (
-                <Alert variant="destructive" className="bg-red-500/10 text-white border-red-500/30">
-                  <AlertDescription>{appointmentsError.message}</AlertDescription>
-                </Alert>
-              )}
+            {appointmentsError && !appointmentsError.message?.toLowerCase().includes("unauthorized") && (
+              <Alert variant="destructive" className="bg-red-500/10 text-white border-red-500/30">
+                <AlertDescription>{appointmentsError.message}</AlertDescription>
+              </Alert>
+            )}
 
-              {appointmentsLoading ? (
-                <div className="space-y-3">
-                  {[...Array(4)].map((_, index) => (
-                    <Skeleton key={index} className="h-12 w-full" />
-                  ))}
-                </div>
-              ) : appointments.length === 0 ? (
-                <p className="text-slate-200">No appointments found for this filter.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left text-slate-200">
-                    <thead className="text-xs uppercase text-slate-300 border-b border-white/10">
-                      <tr>
-                        <th className="py-3 pr-4">Date</th>
-                        <th className="py-3 pr-4">Patient</th>
-                        <th className="py-3 pr-4">Service</th>
-                        <th className="py-3 pr-4">Email</th>
-                        <th className="py-3 pr-4">Phone</th>
-                        <th className="py-3 pr-4">Status</th>
+            {appointmentsLoading ? (
+              <div className="space-y-3">
+                {[...Array(4)].map((_, index) => (
+                  <Skeleton key={index} className="h-12 w-full" />
+                ))}
+              </div>
+            ) : appointments.length === 0 ? (
+              <p className="text-slate-200">No appointments found for this filter.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-slate-200">
+                  <thead className="text-xs uppercase text-slate-300 border-b border-white/10">
+                    <tr>
+                      <th className="py-3 pr-4">Date</th>
+                      <th className="py-3 pr-4">Patient</th>
+                      <th className="py-3 pr-4">Service</th>
+                      <th className="py-3 pr-4">Email</th>
+                      <th className="py-3 pr-4">Phone</th>
+                      <th className="py-3 pr-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {appointments.map((appointment) => (
+                      <tr key={appointment.id} className="border-b border-white/5">
+                        <td className="py-3 pr-4 whitespace-nowrap">
+                          {appointment.start_time
+                            ? format(new Date(appointment.start_time), "MMM d, yyyy h:mm a")
+                            : "-"}
+                        </td>
+                        <td className="py-3 pr-4">
+                          {appointment.first_name} {appointment.last_name || ""}
+                        </td>
+                        <td className="py-3 pr-4">{appointment.service_name || "-"}</td>
+                        <td className="py-3 pr-4">{appointment.contact_email || "-"}</td>
+                        <td className="py-3 pr-4">{appointment.contact_phone || "-"}</td>
+                        <td className="py-3 pr-4">{appointment.status}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {appointments.map((appointment) => (
-                        <tr key={appointment.id} className="border-b border-white/5">
-                          <td className="py-3 pr-4 whitespace-nowrap">
-                            {appointment.start_time
-                              ? format(new Date(appointment.start_time), "MMM d, yyyy h:mm a")
-                              : "-"}
-                          </td>
-                          <td className="py-3 pr-4">
-                            {appointment.first_name} {appointment.last_name || ""}
-                          </td>
-                          <td className="py-3 pr-4">{appointment.service_name || "-"}</td>
-                          <td className="py-3 pr-4">{appointment.contact_email || "-"}</td>
-                          <td className="py-3 pr-4">{appointment.contact_phone || "-"}</td>
-                          <td className="py-3 pr-4">{appointment.status}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
+

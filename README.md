@@ -75,6 +75,7 @@ npm run dev
 Local URLs:
 - Frontend: http://localhost:5173
 - API health check: http://localhost:5050/api/health
+- Admin login: http://localhost:5173/admin (redirects to `/admin/appointments` after sign-in)
 
 ## Environment Variables
 
