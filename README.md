@@ -22,7 +22,8 @@ This repository demonstrates:
 
 ## Demo Status
 
-No public deployment is configured in this repository yet.
+- Live app: https://dental-practice-nyc.vercel.app
+- Admin entry: https://dental-practice-nyc.vercel.app/admin
 
 ## Quick Start
 
