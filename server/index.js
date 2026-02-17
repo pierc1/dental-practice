@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import dotenv from "dotenv";
 import { query } from "./db.js";
 import { sendPatientConfirmation, sendStaffNotification } from "./email.js";
@@ -36,6 +37,8 @@ const corsOptions = {
   credentials: true,
 };
 
+app.disable("x-powered-by");
+app.use(helmet());
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());
@@ -50,11 +53,7 @@ app.use((error, req, res, next) => {
 });
 
 const getClientIp = (req) => {
-  const forwardedFor = req.headers["x-forwarded-for"];
-  if (typeof forwardedFor === "string" && forwardedFor.length > 0) {
-    return forwardedFor.split(",")[0].trim();
-  }
-  return req.ip || req.socket?.remoteAddress || "unknown";
+  return req.ip || "unknown";
 };
 
 const cleanupExpiredEntries = (store, now) => {
@@ -154,6 +153,36 @@ const ensureAdminConfigured = (res) => {
   if (isAdminConfigured()) return true;
   res.status(500).json({ message: "Admin authentication is not configured." });
   return false;
+};
+
+const isAdminPasswordValid = (passwordInput) => {
+  const password = String(passwordInput || "");
+  const expectedPassword = String(process.env.ADMIN_PASSWORD || "");
+  const providedBuffer = Buffer.from(password);
+  const expectedBuffer = Buffer.from(expectedPassword);
+
+  if (!providedBuffer.length || !expectedBuffer.length) {
+    return false;
+  }
+
+  if (providedBuffer.length !== expectedBuffer.length) {
+    // Avoid throwing on length mismatch while still running a constant-time compare.
+    const paddedInput = Buffer.alloc(expectedBuffer.length);
+    providedBuffer.copy(
+      paddedInput,
+      0,
+      0,
+      Math.min(providedBuffer.length, expectedBuffer.length)
+    );
+    crypto.timingSafeEqual(paddedInput, expectedBuffer);
+    return false;
+  }
+
+  return crypto.timingSafeEqual(providedBuffer, expectedBuffer);
+};
+
+const setNoStore = (res) => {
+  res.setHeader("Cache-Control", "no-store");
 };
 
 const getAdminSessionToken = (req) => {
@@ -262,12 +291,10 @@ app.get("/api/health", (req, res) => {
 
 app.post("/api/admin/login", adminLoginRateLimiter, async (req, res) => {
   try {
+    setNoStore(res);
     if (!ensureAdminConfigured(res)) return;
 
-    const password = String(req.body?.password || "");
-    const expectedPassword = String(process.env.ADMIN_PASSWORD || "");
-
-    if (!password || password !== expectedPassword) {
+    if (!isAdminPasswordValid(req.body?.password)) {
       res.status(401).json({ message: "Invalid admin password." });
       return;
     }
@@ -281,12 +308,14 @@ app.post("/api/admin/login", adminLoginRateLimiter, async (req, res) => {
 });
 
 app.post("/api/admin/logout", adminRouteRateLimiter, (req, res) => {
+  setNoStore(res);
   const token = getAdminSessionToken(req);
   clearAdminSession(res, token);
   res.status(204).send();
 });
 
 app.get("/api/admin/session", adminRouteRateLimiter, (req, res) => {
+  setNoStore(res);
   if (!requireAdminAuth(req, res)) return;
   res.json({ authenticated: true, sessionTtlMinutes: adminSessionTtlMinutes });
 });

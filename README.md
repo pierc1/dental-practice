@@ -175,6 +175,13 @@ Resend integration is optional for local review.
 - Admin routes return `Unauthorized`: log in first via `POST /api/admin/login`, and ensure `ADMIN_PASSWORD` is set.
 - Port conflicts: change `PORT` (API) or Vite port settings if needed.
 
+## Deployment Security Checklist
+
+- Set `NODE_ENV=production` for deployed API environments.
+- Use a strong `ADMIN_PASSWORD` (long, unique, not reused).
+- Restrict `ALLOWED_ORIGINS` to exact trusted frontend domains only.
+- Set frontend `VITE_API_URL` to the real deployed API URL (not localhost).
+
 ## Project Structure (Key Files)
 
 - `server/index.js`: Express API and scheduling logic
