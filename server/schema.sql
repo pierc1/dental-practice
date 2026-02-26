@@ -98,6 +98,60 @@ create table if not exists blocked_periods (
   check (end_time > start_time)
 );
 
+-- Normalize and dedupe services before enforcing uniqueness.
+update services
+set name = trim(name)
+where name <> trim(name);
+
+with ranked_services as (
+  select
+    id,
+    row_number() over (partition by name order by id) as rn,
+    min(id) over (partition by name) as keep_id
+  from services
+),
+duplicate_services as (
+  select id, keep_id
+  from ranked_services
+  where rn > 1
+)
+update appointments a
+set service_id = d.keep_id
+from duplicate_services d
+where a.service_id = d.id;
+
+with ranked_services as (
+  select
+    id,
+    row_number() over (partition by name order by id) as rn
+  from services
+)
+delete from services s
+using ranked_services r
+where s.id = r.id
+  and r.rn > 1;
+
+-- Dedupe recurring availability rows before adding a unique index.
+with ranked_availability as (
+  select
+    id,
+    row_number() over (
+      partition by day_of_week, start_time, end_time, slot_length_minutes
+      order by id
+    ) as rn
+  from availability
+)
+delete from availability a
+using ranked_availability r
+where a.id = r.id
+  and r.rn > 1;
+
+create unique index if not exists services_name_unique_idx
+  on services (name);
+
+create unique index if not exists availability_unique_slot_idx
+  on availability (day_of_week, start_time, end_time, slot_length_minutes);
+
 create unique index if not exists appointments_unique_start_time
   on appointments (start_time);
 

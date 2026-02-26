@@ -4,7 +4,8 @@ values
   ('Consultation', 30),
   ('Whitening', 60),
   ('Emergency Exam', 30)
-on conflict do nothing;
+on conflict (name) do update
+set duration_minutes = excluded.duration_minutes;
 
 -- Mon-Fri 9:00-17:00, 30-min slots
 insert into availability (day_of_week, start_time, end_time, slot_length_minutes)
@@ -14,4 +15,4 @@ values
   (3, '09:00', '17:00', 30),
   (4, '09:00', '17:00', 30),
   (5, '09:00', '17:00', 30)
-on conflict do nothing;
+on conflict (day_of_week, start_time, end_time, slot_length_minutes) do nothing;
