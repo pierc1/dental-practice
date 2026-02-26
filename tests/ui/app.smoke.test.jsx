@@ -10,6 +10,11 @@ vi.mock("@vercel/speed-insights/react", () => ({
 
 import App from "../../src/App.jsx";
 
+const routerFuture = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+};
+
 describe("UI smoke test", () => {
   it("renders the home route shell", () => {
     const queryClient = new QueryClient({
@@ -22,7 +27,7 @@ describe("UI smoke test", () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={["/"]}>
+        <MemoryRouter initialEntries={["/"]} future={routerFuture}>
           <App />
         </MemoryRouter>
       </QueryClientProvider>
