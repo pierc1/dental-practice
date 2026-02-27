@@ -98,6 +98,14 @@ create table if not exists blocked_periods (
   check (end_time > start_time)
 );
 
+-- Supabase hardening: enable RLS on exposed public tables.
+-- This project uses a backend API as the data access layer, so we do not add anon/authenticated policies here.
+alter table services enable row level security;
+alter table availability enable row level security;
+alter table exceptions enable row level security;
+alter table appointments enable row level security;
+alter table blocked_periods enable row level security;
+
 -- Normalize and dedupe services before enforcing uniqueness.
 update services
 set name = trim(name)
