@@ -14,6 +14,8 @@
     "test:api": "vitest run tests/api",
     "test:db": "RUN_DB_TESTS=1 vitest run tests/db",
     "test:ui": "vitest run tests/ui",
+    "test:e2e": "npx playwright test",
+    "test:e2e:headed": "npx playwright test --headed",
     "dev:server": "node --watch server/index.js",
     "start:server": "node server/index.js",
     "db:up": "docker compose up -d db",
