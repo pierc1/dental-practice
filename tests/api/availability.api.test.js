@@ -373,6 +373,9 @@ describe("API: availability", () => {
 
     const onlySlot = response.body.slots[0];
     expect(onlySlot.time).toBe("09:00");
-    expect(onlySlot.end).toContain("T09:45:00");
+
+    const slotStartMs = new Date(onlySlot.start).getTime();
+    const slotEndMs = new Date(onlySlot.end).getTime();
+    expect(slotEndMs - slotStartMs).toBe(45 * 60 * 1000);
   });
 });
