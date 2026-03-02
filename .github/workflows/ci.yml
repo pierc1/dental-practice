@@ -91,12 +91,11 @@ jobs:
     needs: quality
     if: >-
       ${{
-        (github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) &&
-        vars.PLAYWRIGHT_BASE_URL != ''
+        github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
       }}
     continue-on-error: true
     env:
-      PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL }}
+      PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL || 'https://dental-practice-nyc.vercel.app' }}
       PLAYWRIGHT_ADMIN_PASSWORD: ${{ secrets.PLAYWRIGHT_ADMIN_PASSWORD }}
       PLAYWRIGHT_BOOKING_ENABLED: ${{ vars.PLAYWRIGHT_BOOKING_ENABLED }}
 

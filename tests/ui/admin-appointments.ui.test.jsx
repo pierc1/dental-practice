@@ -46,7 +46,7 @@ describe("UI: admin appointments", () => {
   });
 
   it("redirects unauthorized users to /admin", async () => {
-    checkAdminSessionMock.mockRejectedValueOnce(new Error("Unauthorized."));
+    checkAdminSessionMock.mockRejectedValue(new Error("Unauthorized."));
 
     renderWithAppProviders(<App />, { initialEntries: ["/admin/appointments"] });
 
