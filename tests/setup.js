@@ -34,6 +34,14 @@ if (typeof window !== "undefined" && !window.matchMedia) {
   });
 }
 
+if (typeof window !== "undefined") {
+  Object.defineProperty(window, "scrollTo", {
+    value: vi.fn(),
+    writable: true,
+    configurable: true,
+  });
+}
+
 if (typeof URL !== "undefined" && !URL.createObjectURL) {
   URL.createObjectURL = () => "blob:test";
 }

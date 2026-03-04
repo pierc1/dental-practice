@@ -8,6 +8,7 @@ import BookAppointment from '../Pages/BookAppointment'
 import AdminLogin from '../Pages/AdminLogin'
 import AdminAppointments from '../Pages/AdminAppointments'
 import AdminBlockedPeriods from '../Pages/AdminBlockedPeriods'
+import ScrollToTop from './components/ScrollToTop'
 import { ROUTES } from '@/config/siteConfig'
 
 function withLayout(Component, currentPageName) {
@@ -27,32 +28,35 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      {ROUTES.map((route) => {
-        const Component = routeComponents[route.id]
-        if (!Component) return null
+    <>
+      <ScrollToTop />
+      <Routes>
+        {ROUTES.map((route) => {
+          const Component = routeComponents[route.id]
+          if (!Component) return null
 
-        return (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={withLayout(Component, route.id)}
-          />
-        )
-      })}
-      <Route
-        path="/admin"
-        element={withLayout(AdminLogin, 'Admin')}
-      />
-      <Route
-        path="/admin/appointments"
-        element={withLayout(AdminAppointments, 'Admin')}
-      />
-      <Route
-        path="/admin/blocked-periods"
-        element={withLayout(AdminBlockedPeriods, 'Admin')}
-      />
-      <Route path="*" element={withLayout(Home, 'Home')} />
-    </Routes>
+          return (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={withLayout(Component, route.id)}
+            />
+          )
+        })}
+        <Route
+          path="/admin"
+          element={withLayout(AdminLogin, 'Admin')}
+        />
+        <Route
+          path="/admin/appointments"
+          element={withLayout(AdminAppointments, 'Admin')}
+        />
+        <Route
+          path="/admin/blocked-periods"
+          element={withLayout(AdminBlockedPeriods, 'Admin')}
+        />
+        <Route path="*" element={withLayout(Home, 'Home')} />
+      </Routes>
+    </>
   )
 }
