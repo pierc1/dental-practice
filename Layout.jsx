@@ -173,6 +173,7 @@ export default function Layout({ children }) {
                 <li><Link to={createPageUrl("Services")} className="hover:text-white transition-colors">Services</Link></li>
                 <li><Link to={createPageUrl("Team")} className="hover:text-white transition-colors">Our Team</Link></li>
                 <li><Link to={createPageUrl("BookAppointment")} className="hover:text-white transition-colors">Book Appointment</Link></li>
+                <li><Link to="/admin" className="hover:text-white transition-colors">Admin</Link></li>
               </ul>
             </div>
 
