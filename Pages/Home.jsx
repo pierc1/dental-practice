@@ -74,7 +74,7 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-40 md:pt-52 pb-0">
           <div className="grid lg:grid-cols-[0.9fr_1.1fr] md:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="space-y-7 pb-16 md:pb-24">
+            <div className="relative z-10 space-y-7 pb-16 md:pb-24">
               <div className="text-sm uppercase tracking-[0.28em] text-cyan-200 font-semibold">
                 NYC Smiles
               </div>
@@ -91,17 +91,17 @@ export default function Home() {
                 A modern, technology-led dental studio delivering<br></br> safe, aesthetic results with concierge-level care.
               </p>
               <div className="flex flex-wrap items-center gap-3">
-                <Link to={appointmentUrl}>
-                  <Button className="rounded-full px-8 h-12 text-base shadow-lg shadow-cyan-500/20">
+                <Button asChild className="rounded-full px-8 h-12 text-base shadow-lg shadow-cyan-500/20">
+                  <Link to={appointmentUrl}>
                     Consultation
                     <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-                <Link to={createPageUrl("Services")}>
-                  <Button variant="outline" className="rounded-full border-white/30 text-white hover:border-cyan-300 hover:text-cyan-100 px-6 h-12 text-base">
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="rounded-full border-white/30 text-white hover:border-cyan-300 hover:text-cyan-100 px-6 h-12 text-base">
+                  <Link to={createPageUrl("Services")}>
                     View services
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
               <div className="flex flex-col gap-3 text-sm text-slate-200 pt-2">
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -124,7 +124,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="absolute inset-x-0 bottom-0 flex justify-end px-4 sm:px-6 lg:px-8">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex justify-end px-4 sm:px-6 lg:px-8">
             <div className="hidden md:block w-full max-w-[200px] md:max-w-[300px] lg:max-w-[475px] -translate-x-4 md:-translate-x-6 lg:-translate-x-10">
               <img
                 src={heroPhoto}
@@ -181,12 +181,12 @@ export default function Home() {
                 Explore a curated selection of our most-loved services—crafted for comfort and results.
               </p>
             </div>
-            <Link to={createPageUrl("Services")}>
-              <Button variant="outline" className="rounded-full border-2 border-cyan-500 text-cyan-700 hover:bg-cyan-500 hover:text-white px-6">
+            <Button asChild variant="outline" className="rounded-full border-2 border-cyan-500 text-cyan-700 hover:bg-cyan-500 hover:text-white px-6">
+              <Link to={createPageUrl("Services")}>
                 View all services
                 <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -223,11 +223,11 @@ export default function Home() {
                     </div>
                     <CardContent className="p-5">
                       <div className="flex items-center justify-between">
-                        <Link to={createPageUrl("BookAppointment")}>
-                          <Button variant="outline" className="rounded-full border-cyan-500 text-cyan-700 hover:bg-cyan-500 hover:text-white">
+                        <Button asChild variant="outline" className="rounded-full border-cyan-500 text-cyan-700 hover:bg-cyan-500 hover:text-white">
+                          <Link to={createPageUrl("BookAppointment")}>
                             Book this service
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                         <ArrowRight className="w-5 h-5 text-slate-400" />
                       </div>
                     </CardContent>

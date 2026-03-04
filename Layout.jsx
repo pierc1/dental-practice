@@ -79,11 +79,11 @@ export default function Layout({ children }) {
                   </span>
                 </Link>
               ))}
-              <Link to={appointmentUrl}>
-                <Button className="rounded-full border border-white/80 text-white bg-transparent hover:bg-white/10 hover:text-white px-5 h-11 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+              <Button asChild className="rounded-full border border-white/80 text-white bg-transparent hover:bg-white/10 hover:text-white px-5 h-11 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+                <Link to={appointmentUrl}>
                   Book Now
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -124,11 +124,11 @@ export default function Layout({ children }) {
                   </span>
                 </Link>
               ))}
-              <Link to={appointmentUrl} onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full mt-6 rounded-full border border-white text-white bg-transparent hover:bg-white/10">
+              <Button asChild className="w-full mt-6 rounded-full border border-white text-white bg-transparent hover:bg-white/10">
+                <Link to={appointmentUrl} onClick={() => setMobileMenuOpen(false)}>
                   Book Appointment
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         )}

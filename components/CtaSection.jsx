@@ -24,17 +24,18 @@ export default function CtaSection({
             {title}
           </h2>
           <p className="text-xl text-cyan-50/90 mb-10 leading-relaxed">{description}</p>
-          <Link to={to}>
-            <Button
-              size="lg"
-              className={`rounded-full h-auto py-3 md:h-12 md:py-0 px-10 shadow-xl shadow-cyan-900/25 ${buttonClassName}`}
-            >
+          <Button
+            asChild
+            size="lg"
+            className={`rounded-full h-auto py-3 md:h-12 md:py-0 px-10 shadow-xl shadow-cyan-900/25 ${buttonClassName}`}
+          >
+            <Link to={to}>
               {buttonText}
               {ButtonIcon && (
                 <ButtonIcon className="ml-2 w-5 h-5" />
               )}
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           {children}
         </div>
       </div>

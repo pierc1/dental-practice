@@ -78,11 +78,11 @@ export default function Team() {
               <p className="text-slate-300 mb-8">
                 We're currently updating our team profiles. Please check back soon or call us to learn more about our dentists.
               </p>
-              <a href={CONTACT_INFO.phone.href}>
-                <Button size="lg" className="bg-transparent border border-white text-white hover:bg-white/10">
+              <Button asChild size="lg" className="bg-transparent border border-white text-white hover:bg-white/10">
+                <a href={CONTACT_INFO.phone.href}>
                   Call to Learn More
-                </Button>
-              </a>
+                </a>
+              </Button>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -179,12 +179,12 @@ export default function Team() {
                         </div>
                       </div>
 
-                      <Link to={appointmentUrl} className="mt-auto">
-                        <Button className="w-full rounded-full border border-white text-white bg-transparent hover:bg-white/10">
+                      <Button asChild className="mt-auto w-full rounded-full border border-white text-white bg-transparent hover:bg-white/10">
+                        <Link to={appointmentUrl}>
                           Book with Dr. {dentist.full_name.split(" ").pop()}
                           <ArrowRight className="ml-2 w-4 h-4" />
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </CardContent>
                   </Card>
                 </motion.div>

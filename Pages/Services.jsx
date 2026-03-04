@@ -69,12 +69,12 @@ export default function Services() {
             <p className="text-xl text-slate-200 max-w-3xl mx-auto mb-10 leading-relaxed">
               Preventive, restorative, and cosmetic dentistry crafted to your smile goals—with concierge-level comfort at every visit.
             </p>
-            <Link to={createPageUrl("BookAppointment")}>
-              <Button size="lg" className="rounded-full border border-white text-white bg-transparent hover:bg-white/10 hover:text-white shadow-xl shadow-cyan-500/30 px-8">
+            <Button asChild size="lg" className="rounded-full border border-white text-white bg-transparent hover:bg-white/10 hover:text-white shadow-xl shadow-cyan-500/30 px-8">
+              <Link to={createPageUrl("BookAppointment")}>
                 Schedule consultation
                 <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </motion.div>
         </div>
       </section>
@@ -160,11 +160,11 @@ export default function Services() {
                                   )}
                                 </div>
 
-                                <Link to={createPageUrl("BookAppointment")}>
-                                  <Button variant="outline" className="w-full rounded-full border-white text-white hover:bg-white/10">
+                                <Button asChild variant="outline" className="w-full rounded-full border-white text-white hover:bg-white/10">
+                                  <Link to={createPageUrl("BookAppointment")}>
                                     Book this service
-                                  </Button>
-                                </Link>
+                                  </Link>
+                                </Button>
                               </div>
                             </CardContent>
                           </Card>
