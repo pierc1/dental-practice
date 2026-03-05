@@ -19,22 +19,6 @@ vi.mock("@/api/adminClient", () => ({
   getApiUrl: (path) => path,
 }));
 
-vi.mock("@/api/base44Client", () => ({
-  base44: {
-    entities: {
-      Service: {
-        list: vi.fn().mockResolvedValue([]),
-      },
-      Dentist: {
-        list: vi.fn().mockResolvedValue([]),
-      },
-      Appointment: {
-        create: vi.fn(),
-      },
-    },
-  },
-}));
-
 import App from "../../src/App.jsx";
 
 describe("UI: admin login", () => {

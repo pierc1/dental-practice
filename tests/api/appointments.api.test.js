@@ -74,7 +74,7 @@ describe("API smoke: appointments", () => {
       const normalized = normalizeSql(sql);
 
       if (
-        normalized.includes("from services where id = $1 and is_active = true")
+        normalized.includes("from appointment_types where id = $1 and is_active = true")
       ) {
         return {
           rowCount: 1,

@@ -52,9 +52,9 @@ describe("API: services", () => {
 
     const [sql] = queryMock.mock.calls[0];
     const normalized = normalizeSql(sql);
-    expect(normalized).toContain("from services");
+    expect(normalized).toContain("from appointment_types");
     expect(normalized).toContain("where is_active = true");
-    expect(normalized).toContain("order by name");
+    expect(normalized).toContain("order by display_order, name");
   });
 
   it("returns unique names in standard seeded response", async () => {

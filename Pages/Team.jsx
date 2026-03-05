@@ -1,8 +1,8 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { fetchPublicJson, getPublicApiUrl } from "@/api/publicClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,10 +18,9 @@ import {
 import { motion } from "framer-motion";
 
 export default function Team() {
-  const { data: dentists = [], isLoading } = useQuery({
-    queryKey: ['dentists'],
-    queryFn: () => base44.entities.Dentist.list(),
-    initialData: []
+  const { data: teamMembers = [], isLoading } = useQuery({
+    queryKey: ["team-members"],
+    queryFn: () => fetchPublicJson(getPublicApiUrl("/api/team-members")),
   });
 
   const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
@@ -69,7 +68,7 @@ export default function Team() {
                 </Card>
               ))}
             </div>
-          ) : dentists.length === 0 ? (
+          ) : teamMembers.length === 0 ? (
             <div className="text-center py-20">
               <div className="w-20 h-20 bg-white/10 border border-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Award className="w-10 h-10 text-cyan-200" />
@@ -86,7 +85,7 @@ export default function Team() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {dentists.map((dentist, index) => (
+              {teamMembers.map((dentist, index) => (
                 <motion.div
                   key={dentist.id}
                   initial={{ opacity: 0, y: 20 }}

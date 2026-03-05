@@ -32,13 +32,13 @@ describeDb("DB: seed idempotency", () => {
     }
   });
 
-  it("can run seed twice without duplicating services", async () => {
+  it("can run seed twice without duplicating appointment types", async () => {
     await queryFn(seedSql);
     await queryFn(seedSql);
 
     const duplicateResult = await queryFn(
       `select name, count(*)::int as count
-       from services
+       from appointment_types
        group by name
        having count(*) > 1`
     );
@@ -54,6 +54,20 @@ describeDb("DB: seed idempotency", () => {
       `select day_of_week, start_time, end_time, slot_length_minutes, count(*)::int as count
        from availability
        group by day_of_week, start_time, end_time, slot_length_minutes
+       having count(*) > 1`
+    );
+
+    expect(duplicateResult.rows).toEqual([]);
+  });
+
+  it("can run seed twice without duplicating team member ids", async () => {
+    await queryFn(seedSql);
+    await queryFn(seedSql);
+
+    const duplicateResult = await queryFn(
+      `select id, count(*)::int as count
+       from team_members
+       group by id
        having count(*) > 1`
     );
 

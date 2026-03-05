@@ -28,7 +28,8 @@ describeDb("DB: RLS hardening", () => {
 
   it("enables RLS on public tables", async () => {
     const tableNames = [
-      "services",
+      "appointment_types",
+      "team_members",
       "availability",
       "exceptions",
       "appointments",

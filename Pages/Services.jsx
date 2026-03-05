@@ -1,11 +1,11 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { fetchPublicJson, getPublicApiUrl } from "@/api/publicClient";
 import CtaSection from "@/components/CtaSection";
 import { PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
 import {
@@ -30,8 +30,8 @@ const categoryIcons = {
 
 export default function Services() {
   const { data: services = [], isLoading } = useQuery({
-    queryKey: ['services'],
-    queryFn: () => base44.entities.Service.list(),
+    queryKey: ['services-catalog'],
+    queryFn: () => fetchPublicJson(getPublicApiUrl("/api/services/catalog")),
     initialData: []
   });
 
@@ -146,10 +146,10 @@ export default function Services() {
                               <div className="mt-auto w-full flex flex-col gap-3">
                                 <div className="border-t border-white/10" />
                                 <div className="flex items-center justify-start gap-4 text-slate-200 flex-wrap">
-                                  {service.duration && (
+                                  {service.duration_minutes && (
                                     <div className="flex items-center gap-2 text-sm">
                                       <Clock className="w-4 h-4 text-cyan-200" />
-                                      <span>{service.duration} min</span>
+                                      <span>{service.duration_minutes} min</span>
                                     </div>
                                   )}
                                   {service.price_range && (
@@ -161,7 +161,9 @@ export default function Services() {
                                 </div>
 
                                 <Button asChild variant="outline" className="w-full rounded-full border-white text-white hover:bg-white/10">
-                                  <Link to={createPageUrl("BookAppointment")}>
+                                  <Link
+                                    to={`${createPageUrl("BookAppointment")}?appointmentTypeId=${service.appointment_type_id}`}
+                                  >
                                     Book this service
                                   </Link>
                                 </Button>

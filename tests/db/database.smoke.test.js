@@ -32,21 +32,23 @@ describeDb("DB smoke test", () => {
 
     const tables = await queryFn(`
       select
-        to_regclass('public.services') as services,
+        to_regclass('public.appointment_types') as appointment_types,
+        to_regclass('public.team_members') as team_members,
         to_regclass('public.availability') as availability,
         to_regclass('public.appointments') as appointments,
         to_regclass('public.blocked_periods') as blocked_periods
     `);
 
-    expect(tables.rows[0].services).toBeTruthy();
+    expect(tables.rows[0].appointment_types).toBeTruthy();
+    expect(tables.rows[0].team_members).toBeTruthy();
     expect(tables.rows[0].availability).toBeTruthy();
     expect(tables.rows[0].appointments).toBeTruthy();
     expect(tables.rows[0].blocked_periods).toBeTruthy();
   });
 
-  it("finds at least one active service row", async () => {
+  it("finds at least one active appointment type row", async () => {
     const result = await queryFn(
-      "select count(*)::int as total from services where is_active = true"
+      "select count(*)::int as total from appointment_types where is_active = true"
     );
 
     expect(result.rows[0].total).toBeGreaterThan(0);

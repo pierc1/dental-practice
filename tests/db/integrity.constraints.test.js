@@ -34,11 +34,11 @@ describeDb("DB: integrity constraints", () => {
   });
 
   it("rejects overlapping appointments at DB level", async () => {
-    const serviceResult = await queryFn(
-      "select id from services where is_active = true order by id asc limit 1"
+    const appointmentTypeResult = await queryFn(
+      "select id from appointment_types where is_active = true order by id asc limit 1"
     );
-    const serviceId = serviceResult.rows[0]?.id;
-    expect(serviceId).toBeTruthy();
+    const appointmentTypeId = appointmentTypeResult.rows[0]?.id;
+    expect(appointmentTypeId).toBeTruthy();
 
     const firstStart = futureIso(40, 9, 0);
     const firstEnd = futureIso(40, 10, 0);
@@ -50,20 +50,20 @@ describeDb("DB: integrity constraints", () => {
     try {
       await queryFn(
         `insert into appointments
-          (service_id, start_time, end_time, first_name, last_name, contact_email, contact_phone, notes, status)
+          (appointment_type_id, start_time, end_time, first_name, last_name, contact_email, contact_phone, notes, status)
          values
           ($1, $2, $3, 'Test', 'One', 'one@example.com', '1111111111', 'first', 'booked')`,
-        [serviceId, firstStart, firstEnd]
+        [appointmentTypeId, firstStart, firstEnd]
       );
 
       let overlapError;
       try {
         await queryFn(
           `insert into appointments
-            (service_id, start_time, end_time, first_name, last_name, contact_email, contact_phone, notes, status)
+            (appointment_type_id, start_time, end_time, first_name, last_name, contact_email, contact_phone, notes, status)
            values
             ($1, $2, $3, 'Test', 'Two', 'two@example.com', '2222222222', 'second', 'booked')`,
-          [serviceId, overlappingStart, overlappingEnd]
+          [appointmentTypeId, overlappingStart, overlappingEnd]
         );
       } catch (error) {
         overlapError = error;

@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { base44 } from "@/api/base44Client";
+import { fetchPublicJson, getPublicApiUrl } from "@/api/publicClient";
 import CtaSection from "@/components/CtaSection";
 import { CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
 import {
@@ -21,11 +21,12 @@ import {
 import { motion } from "framer-motion";
 
 export default function Home() {
-  const { data: services = [], isLoading: servicesLoading } = useQuery({
-    queryKey: ["services"],
-    queryFn: () => base44.entities.Service.list(),
+  const { data, isLoading: servicesLoading } = useQuery({
+    queryKey: ["services-catalog", "featured"],
+    queryFn: () => fetchPublicJson(getPublicApiUrl("/api/services/catalog?featured=1")),
     initialData: [],
   });
+  const services = Array.isArray(data) ? data : [];
 
   const servicesPreview = services.slice(0, 3);
   const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
@@ -224,7 +225,9 @@ export default function Home() {
                     <CardContent className="p-5">
                       <div className="flex items-center justify-between">
                         <Button asChild variant="outline" className="rounded-full border-cyan-500 text-cyan-700 hover:bg-cyan-500 hover:text-white">
-                          <Link to={createPageUrl("BookAppointment")}>
+                          <Link
+                            to={`${createPageUrl("BookAppointment")}?appointmentTypeId=${service.appointment_type_id}`}
+                          >
                             Book this service
                           </Link>
                         </Button>

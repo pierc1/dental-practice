@@ -7,6 +7,7 @@ Portfolio full-stack project that implements a dental appointment booking workfl
 This repository demonstrates:
 - Patient appointment booking with server-side validation
 - Admin login with protected scheduling endpoints
+- Public team directory loaded from backend API data
 - Availability generation from recurring weekly hours plus date exceptions
 - Admin blocked-time management
 - Database-level overlap protection for appointments and blocked periods
@@ -144,6 +145,9 @@ npm run db:seed
 Public:
 - `GET /api/health`
 - `GET /api/services`
+- `GET /api/team-members`
+- `GET /api/appointment-types`
+- `GET /api/services/catalog`
 - `GET /api/availability`
 - `POST /api/appointments`
 

@@ -13,7 +13,8 @@ test("home loads and primary CTA navigation works", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: /because your smile/i })).toBeVisible();
 
-  const cta = page.getByRole("link", { name: /consultation|book now/i }).first();
+  const cta = page.locator('a[href*="/book-appointment"]').first();
+  await expect(cta).toBeVisible();
   await cta.click();
 
   await expect(page).toHaveURL(/book-appointment/i);

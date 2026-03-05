@@ -26,18 +26,29 @@ describeDb("DB: schema invariants", () => {
     }
   });
 
-  it("has unique indexes for services and availability slot tuples", async () => {
+  it("has unique indexes for appointment types and availability slot tuples", async () => {
     const result = await queryFn(
       `select indexname
        from pg_indexes
        where schemaname = 'public'
-         and indexname in ('services_name_unique_idx', 'availability_unique_slot_idx')`
+         and indexname in ('appointment_types_name_unique_idx', 'availability_unique_slot_idx')`
     );
 
     const names = new Set(result.rows.map((row) => row.indexname));
 
-    expect(names.has("services_name_unique_idx")).toBe(true);
+    expect(names.has("appointment_types_name_unique_idx")).toBe(true);
     expect(names.has("availability_unique_slot_idx")).toBe(true);
+  });
+
+  it("has team member active/display order index", async () => {
+    const result = await queryFn(
+      `select indexname
+       from pg_indexes
+       where schemaname = 'public'
+         and indexname = 'team_members_active_order_idx'`
+    );
+
+    expect(result.rows).toHaveLength(1);
   });
 
   it("has overlap exclusion constraints for appointments and blocked periods", async () => {

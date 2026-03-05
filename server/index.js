@@ -323,12 +323,96 @@ app.get("/api/admin/session", adminRouteRateLimiter, (req, res) => {
 app.get("/api/services", async (req, res) => {
   try {
     const result = await query(
-      "select id, name, duration_minutes from services where is_active = true order by name"
+      "select id, name, duration_minutes from appointment_types where is_active = true order by display_order, name"
     );
     res.json(result.rows);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to load services." });
+  }
+});
+
+app.get("/api/team-members", async (req, res) => {
+  try {
+    const result = await query(
+      `select
+        id,
+        full_name,
+        title,
+        specialty,
+        bio,
+        photo_url,
+        education,
+        years_experience,
+        available_days,
+        available_hours
+      from team_members
+      where is_active = true
+      order by display_order asc, full_name asc`
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to load team members." });
+  }
+});
+
+app.get("/api/appointment-types", async (req, res) => {
+  try {
+    const result = await query(
+      `select
+        at.id,
+        at.name,
+        at.duration_minutes
+      from appointment_types at
+      where at.is_active = true
+      order by at.display_order asc, at.name asc`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to load appointment types." });
+  }
+});
+
+app.get("/api/services/catalog", async (req, res) => {
+  try {
+    const featuredOnly =
+      req.query.featured === "1" ||
+      req.query.featured === "true";
+
+    const filters = ["sc.is_active = true", "at.is_active = true"];
+    const values = [];
+
+    if (featuredOnly) {
+      filters.push("sc.is_featured = true");
+    }
+
+    const result = await query(
+      `select
+        sc.id,
+        sc.name,
+        sc.description,
+        sc.category,
+        sc.duration_minutes,
+        sc.price_range,
+        sc.image_url,
+        sc.appointment_type_id,
+        at.name as appointment_type_name,
+        sc.display_order,
+        sc.is_featured
+      from service_catalog sc
+      inner join appointment_types at on at.id = sc.appointment_type_id
+      where ${filters.join(" and ")}
+      order by sc.display_order asc, sc.name asc`,
+      values
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to load service catalog." });
   }
 });
 
@@ -361,7 +445,7 @@ app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
 
     if (serviceId) {
       values.push(serviceId);
-      filters.push(`a.service_id = $${values.length}`);
+      filters.push(`a.appointment_type_id = $${values.length}`);
     }
 
     if (q) {
@@ -390,9 +474,9 @@ app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
           a.notes,
           a.status,
           a.created_at,
-          s.name as service_name
+          at.name as service_name
         from appointments a
-        left join services s on a.service_id = s.id
+        left join appointment_types at on a.appointment_type_id = at.id
         ${whereClause}
         order by a.start_time desc
         limit $${values.length}`,
@@ -549,7 +633,7 @@ app.get("/api/availability", async (req, res) => {
   try {
     const startParam = parseDateParam(req.query.start);
     const endParam = parseDateParam(req.query.end);
-    const serviceIdParam = req.query.serviceId;
+    const appointmentTypeIdParam = req.query.appointmentTypeId || req.query.serviceId;
 
     const startDate = startParam || new Date();
     startDate.setHours(0, 0, 0, 0);
@@ -561,16 +645,16 @@ app.get("/api/availability", async (req, res) => {
       return res.status(400).json({ message: "End date must be after start date." });
     }
 
-    let serviceDurationMinutes = null;
-    if (serviceIdParam) {
+    let appointmentDurationMinutes = null;
+    if (appointmentTypeIdParam) {
       const serviceResult = await query(
-        "select duration_minutes from services where id = $1 and is_active = true",
-        [serviceIdParam]
+        "select duration_minutes from appointment_types where id = $1 and is_active = true",
+        [appointmentTypeIdParam]
       );
       if (serviceResult.rowCount === 0) {
-        return res.status(400).json({ message: "Invalid serviceId." });
+        return res.status(400).json({ message: "Invalid appointmentTypeId." });
       }
-      serviceDurationMinutes = Number(serviceResult.rows[0].duration_minutes);
+      appointmentDurationMinutes = Number(serviceResult.rows[0].duration_minutes);
     }
 
     const availabilityResult = await query(
@@ -661,7 +745,7 @@ app.get("/api/availability", async (req, res) => {
       for (const window of windows) {
         const windowStart = buildDateWithTime(cursor, window.start);
         const windowEnd = buildDateWithTime(cursor, window.end);
-        const slotDuration = serviceDurationMinutes || window.slotLength;
+        const slotDuration = appointmentDurationMinutes || window.slotLength;
 
         for (
           let slotStart = new Date(windowStart.getTime());
@@ -704,6 +788,7 @@ app.get("/api/availability", async (req, res) => {
 app.post("/api/appointments", async (req, res) => {
   try {
     const {
+      appointmentTypeId,
       serviceId,
       startTime,
       firstName,
@@ -712,10 +797,11 @@ app.post("/api/appointments", async (req, res) => {
       contactPhone,
       notes,
     } = req.body || {};
+    const resolvedAppointmentTypeId = appointmentTypeId || serviceId;
 
-    if (!serviceId || !startTime || !firstName || !lastName) {
+    if (!resolvedAppointmentTypeId || !startTime || !firstName || !lastName) {
       return res.status(400).json({
-        message: "serviceId, startTime, firstName, and lastName are required.",
+        message: "appointmentTypeId, startTime, firstName, and lastName are required.",
       });
     }
 
@@ -742,12 +828,12 @@ app.post("/api/appointments", async (req, res) => {
     }
 
     const serviceResult = await query(
-      "select id, name, duration_minutes from services where id = $1 and is_active = true",
-      [serviceId]
+      "select id, name, duration_minutes from appointment_types where id = $1 and is_active = true",
+      [resolvedAppointmentTypeId]
     );
 
     if (serviceResult.rowCount === 0) {
-      return res.status(400).json({ message: "Invalid serviceId." });
+      return res.status(400).json({ message: "Invalid appointmentTypeId." });
     }
 
     const serviceName = serviceResult.rows[0].name;
@@ -840,12 +926,12 @@ app.post("/api/appointments", async (req, res) => {
 
     const insertResult = await query(
       `insert into appointments
-        (service_id, start_time, end_time, first_name, last_name, contact_email, contact_phone, notes)
+        (appointment_type_id, start_time, end_time, first_name, last_name, contact_email, contact_phone, notes)
        values
         ($1, $2, $3, $4, $5, $6, $7, $8)
        returning id, start_time, end_time`,
       [
-        serviceId,
+        resolvedAppointmentTypeId,
         requestedStart.toISOString(),
         requestedEnd.toISOString(),
         firstName,

@@ -71,18 +71,18 @@ describe("API: availability", () => {
   it("rejects invalid serviceId", async () => {
     queryMock.mockImplementation(async (sql) => {
       const normalized = normalizeSql(sql);
-      if (normalized.includes("select duration_minutes from services")) {
+      if (normalized.includes("select duration_minutes from appointment_types")) {
         return { rowCount: 0, rows: [] };
       }
       throw new Error(`Unhandled SQL: ${normalized}`);
     });
 
     const response = await request(app).get(
-      "/api/availability?start=2030-01-01&end=2030-01-03&serviceId=999"
+      "/api/availability?start=2030-01-01&end=2030-01-03&appointmentTypeId=999"
     );
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toMatch(/invalid serviceid/i);
+    expect(response.body.message).toMatch(/invalid appointmenttypeid/i);
   });
 
   it("excludes slots for closed exceptions", async () => {
@@ -335,7 +335,7 @@ describe("API: availability", () => {
     queryMock.mockImplementation(async (sql) => {
       const normalized = normalizeSql(sql);
 
-      if (normalized.includes("select duration_minutes from services")) {
+      if (normalized.includes("select duration_minutes from appointment_types")) {
         return { rowCount: 1, rows: [{ duration_minutes: 45 }] };
       }
 
@@ -365,7 +365,7 @@ describe("API: availability", () => {
     });
 
     const response = await request(app).get(
-      `/api/availability?start=${dateKey}&end=${dateKey}&serviceId=1`
+      `/api/availability?start=${dateKey}&end=${dateKey}&appointmentTypeId=1`
     );
 
     expect(response.status).toBe(200);

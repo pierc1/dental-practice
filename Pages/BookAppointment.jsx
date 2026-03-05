@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,37 +20,18 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { addDays, format, startOfDay } from "date-fns";
-
-const resolveApiUrl = () => {
-  if (import.meta.env.PROD) {
-    return "";
-  }
-  const configured = import.meta.env.VITE_API_URL?.trim();
-  return configured || "http://localhost:5050";
-};
-
-const API_URL = resolveApiUrl();
-
-const fetchJson = async (url, options) => {
-  const response = await fetch(url, options);
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(payload?.message || "Request failed.");
-  }
-
-  return payload;
-};
+import { fetchPublicJson, getPublicApiUrl } from "@/api/publicClient";
 
 const toLocalDate = (dateKey) => new Date(`${dateKey}T00:00:00`);
 
 export default function BookAppointment() {
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     contactEmail: "",
     contactPhone: "",
-    serviceId: "",
+    appointmentTypeId: searchParams.get("appointmentTypeId") || "",
     appointmentDate: "",
     slotStart: "",
     notes: "",
@@ -61,23 +43,28 @@ export default function BookAppointment() {
   const startDateKey = format(today, "yyyy-MM-dd");
   const endDateKey = format(addDays(today, 13), "yyyy-MM-dd");
 
-  const servicesQuery = useQuery({
-    queryKey: ["services"],
-    queryFn: () => fetchJson(`${API_URL}/api/services`),
+  const appointmentTypesQuery = useQuery({
+    queryKey: ["appointment-types"],
+    queryFn: () => fetchPublicJson(getPublicApiUrl("/api/appointment-types")),
   });
 
+  const selectedAppointmentType = appointmentTypesQuery.data?.find(
+    (appointmentType) => String(appointmentType.id) === String(formData.appointmentTypeId)
+  );
+
   const availabilityQuery = useQuery({
-    queryKey: ["availability", startDateKey, endDateKey, formData.serviceId],
+    queryKey: ["availability", startDateKey, endDateKey, formData.appointmentTypeId],
     queryFn: () => {
       const params = new URLSearchParams({
         start: startDateKey,
         end: endDateKey,
       });
-      if (formData.serviceId) {
-        params.set("serviceId", formData.serviceId);
+      if (selectedAppointmentType) {
+        params.set("appointmentTypeId", String(selectedAppointmentType.id));
       }
-      return fetchJson(`${API_URL}/api/availability?${params.toString()}`);
+      return fetchPublicJson(getPublicApiUrl(`/api/availability?${params.toString()}`));
     },
+    enabled: Boolean(selectedAppointmentType),
   });
 
   const slotsByDate = useMemo(() => {
@@ -91,9 +78,9 @@ export default function BookAppointment() {
 
   const availableDates = useMemo(() => Object.keys(slotsByDate).sort(), [slotsByDate]);
 
-  const selectedService = servicesQuery.data?.find(
-    (service) => String(service.id) === String(formData.serviceId)
-  );
+  const selectedAppointmentTypeId = selectedAppointmentType
+    ? String(selectedAppointmentType.id)
+    : "";
 
   const selectedSlots = (slotsByDate[formData.appointmentDate] || []).slice().sort((a, b) =>
     a.start.localeCompare(b.start)
@@ -104,7 +91,7 @@ export default function BookAppointment() {
 
   const bookingMutation = useMutation({
     mutationFn: (payload) =>
-      fetchJson(`${API_URL}/api/appointments`, {
+      fetchPublicJson(getPublicApiUrl("/api/appointments"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -122,8 +109,8 @@ export default function BookAppointment() {
     event.preventDefault();
     setError(null);
 
-    if (!formData.serviceId) {
-      setError("Please select a service.");
+    if (!formData.appointmentTypeId) {
+      setError("Please select an appointment type.");
       return;
     }
 
@@ -157,8 +144,17 @@ export default function BookAppointment() {
       return;
     }
 
+    const selectedType = appointmentTypesQuery.data?.find(
+      (appointmentType) => String(appointmentType.id) === String(formData.appointmentTypeId)
+    );
+
+    if (!selectedType) {
+      setError("Please select a valid appointment type.");
+      return;
+    }
+
     bookingMutation.mutate({
-      serviceId: Number(formData.serviceId),
+      appointmentTypeId: Number(selectedType.id),
       startTime: formData.slotStart,
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
@@ -196,7 +192,7 @@ export default function BookAppointment() {
                   </div>
                   <div className="flex items-center gap-3 text-slate-100">
                     <Stethoscope className="w-5 h-5 text-cyan-200" />
-                    <span>{selectedService?.name}</span>
+                    <span>{selectedAppointmentType?.name}</span>
                   </div>
                   <div className="flex items-center gap-3 text-slate-100">
                     <Calendar className="w-5 h-5 text-cyan-200" />
@@ -222,7 +218,7 @@ export default function BookAppointment() {
                     lastName: "",
                     contactEmail: "",
                     contactPhone: "",
-                    serviceId: "",
+                    appointmentTypeId: "",
                     appointmentDate: "",
                     slotStart: "",
                     notes: "",
@@ -339,31 +335,31 @@ export default function BookAppointment() {
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <Stethoscope className="w-5 h-5 text-cyan-200" />
-                    Service Type
+                    Appointment Type
                   </h3>
                   <div>
-                    <Label htmlFor="service_name">Select Service *</Label>
-                    {servicesQuery.isLoading ? (
+                    <Label htmlFor="appointment_type">Select Appointment Type *</Label>
+                    {appointmentTypesQuery.isLoading ? (
                       <Skeleton className="h-10 w-full mt-2" />
                     ) : (
                       <Select
-                        value={formData.serviceId}
+                        value={selectedAppointmentTypeId}
                         onValueChange={(value) =>
                           setFormData({
                             ...formData,
-                            serviceId: value,
+                            appointmentTypeId: value,
                             appointmentDate: "",
                             slotStart: "",
                           })
                         }
                       >
                         <SelectTrigger className="mt-2 bg-white border-slate-300 text-black">
-                          <SelectValue placeholder="Choose a service..." className="placeholder:text-slate-400" />
+                          <SelectValue placeholder="Choose an appointment type..." className="placeholder:text-slate-400" />
                         </SelectTrigger>
                         <SelectContent>
-                          {servicesQuery.data?.map((service) => (
-                            <SelectItem key={service.id} value={String(service.id)}>
-                              {service.name} · {service.duration_minutes} min
+                          {appointmentTypesQuery.data?.map((appointmentType) => (
+                            <SelectItem key={appointmentType.id} value={String(appointmentType.id)}>
+                              {appointmentType.name} · {appointmentType.duration_minutes} min
                             </SelectItem>
                           ))}
                         </SelectContent>

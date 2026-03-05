@@ -57,25 +57,9 @@ vi.mock("@/components/ui/select", async () => {
   };
 });
 
-vi.mock("@/api/base44Client", () => ({
-  base44: {
-    entities: {
-      Service: {
-        list: vi.fn().mockResolvedValue([]),
-      },
-      Dentist: {
-        list: vi.fn().mockResolvedValue([]),
-      },
-      Appointment: {
-        create: vi.fn(),
-      },
-    },
-  },
-}));
-
 import App from "../../src/App.jsx";
 
-const sampleServices = [
+const sampleAppointmentTypes = [
   { id: 1, name: "Cleaning", duration_minutes: 60 },
   { id: 2, name: "Consultation", duration_minutes: 30 },
 ];
@@ -126,8 +110,8 @@ describe("UI: book appointment", () => {
     global.fetch = vi.fn((url, options = {}) => {
       const target = String(url);
 
-      if (target.includes("/api/services")) {
-        return createJsonResponse(sampleServices);
+      if (target.includes("/api/appointment-types")) {
+        return createJsonResponse(sampleAppointmentTypes);
       }
 
       if (target.includes("/api/availability")) {
@@ -154,10 +138,21 @@ describe("UI: book appointment", () => {
     renderWithAppProviders(<App />, { initialEntries: ["/book-appointment"] });
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/api/services"), undefined);
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/api/appointment-types"), undefined);
     });
 
     expect(await screen.findByRole("option", { name: /cleaning · 60 min/i })).toBeInTheDocument();
+  });
+
+  it("preselects appointment type from query param", async () => {
+    renderWithAppProviders(<App />, { initialEntries: ["/book-appointment?appointmentTypeId=2"] });
+
+    await waitFor(() => {
+      const availabilityCall = global.fetch.mock.calls.find(([url]) =>
+        String(url).includes("/api/availability") && String(url).includes("appointmentTypeId=2")
+      );
+      expect(availabilityCall).toBeTruthy();
+    });
   });
 
   it("requires service/date/time before submit", async () => {
@@ -172,7 +167,7 @@ describe("UI: book appointment", () => {
     const form = screen.getByRole("button", { name: /book appointment/i }).closest("form");
     fireEvent.submit(form);
 
-    expect(await screen.findByText(/please select a service/i)).toBeInTheDocument();
+    expect(await screen.findByText(/please select an appointment type/i)).toBeInTheDocument();
   });
 
   it("validates patient/contact/notes requirements", async () => {
@@ -232,7 +227,7 @@ describe("UI: book appointment", () => {
         contactPhone: "(212) 555-5555",
         notes: "Looking for whitening consult",
       });
-      expect(typeof payload.serviceId).toBe("number");
+      expect(typeof payload.appointmentTypeId).toBe("number");
       expect(payload.startTime).toBeTruthy();
     });
 

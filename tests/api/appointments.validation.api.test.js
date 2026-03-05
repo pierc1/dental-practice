@@ -55,7 +55,7 @@ const setBookingQueryMocks = ({
   queryMock.mockImplementation(async (sql, values = []) => {
     const normalized = normalizeSql(sql);
 
-    if (normalized.includes("from services where id = $1 and is_active = true")) {
+    if (normalized.includes("from appointment_types where id = $1 and is_active = true")) {
       if (!serviceExists) {
         return { rowCount: 0, rows: [] };
       }
@@ -99,7 +99,7 @@ const setBookingQueryMocks = ({
 };
 
 const validPayload = (startTime = nextFutureIso()) => ({
-  serviceId: 1,
+  appointmentTypeId: 1,
   startTime,
   firstName: "Ada",
   lastName: "Lovelace",
@@ -152,13 +152,13 @@ describe("API: appointment validation + admin list", () => {
     expect(queryMock).not.toHaveBeenCalled();
   });
 
-  it("rejects invalid serviceId", async () => {
+  it("rejects invalid appointmentTypeId", async () => {
     setBookingQueryMocks({ serviceExists: false });
 
     const response = await request(app).post("/api/appointments").send(validPayload());
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toMatch(/invalid serviceid/i);
+    expect(response.body.message).toMatch(/invalid appointmenttypeid/i);
   });
 
   it("rejects times outside availability windows", async () => {
@@ -270,7 +270,7 @@ describe("API: appointment validation + admin list", () => {
     expect(normalized).toContain("a.start_time >=");
     expect(normalized).toContain("a.start_time <");
     expect(normalized).toContain("a.status =");
-    expect(normalized).toContain("a.service_id =");
+    expect(normalized).toContain("a.appointment_type_id =");
     expect(normalized).toContain("a.first_name ilike");
 
     expect(values.at(-1)).toBe(500);
