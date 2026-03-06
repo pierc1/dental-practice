@@ -1,12 +1,6 @@
-const resolveApiUrl = () => {
-  if (import.meta.env.PROD) {
-    return "";
-  }
-  const configured = import.meta.env.VITE_API_URL?.trim();
-  return configured || "http://localhost:5050";
-};
+import { resolveApiBaseUrl } from "./resolveApiBaseUrl";
 
-const API_URL = resolveApiUrl();
+const API_URL = resolveApiBaseUrl();
 
 const fetchJson = async (url, options) => {
   const response = await fetch(url, options);

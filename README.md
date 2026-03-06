@@ -86,7 +86,7 @@ Defaults are in `.env.example`.
 | Variable | Required | Description |
 |---|---|---|
 | `PORT` | No | API port. Default: `5050` |
-| `VITE_API_URL` | No (local/override) | Optional API base URL override; in production the frontend defaults to same-origin `/api` |
+| `VITE_API_URL` | No (local/prod override) | Optional API base URL override in both dev and production; when unset, production falls back to same-origin `/api` |
 | `ADMIN_PASSWORD` | Yes (admin routes) | Password for admin login |
 | `ADMIN_SESSION_TTL_MINUTES` | No | In-memory admin session TTL. Default: `30` |
 | `ALLOWED_ORIGINS` | No (for local defaults) | Comma-separated CORS allowlist |
@@ -185,7 +185,7 @@ Resend integration is optional for local review.
 - Set `NODE_ENV=production` for deployed API environments.
 - Use a strong `ADMIN_PASSWORD` (long, unique, not reused).
 - Restrict `ALLOWED_ORIGINS` to exact trusted frontend domains only.
-- Keep frontend `VITE_API_URL` unset in production unless you intentionally want to bypass same-origin `/api` proxying.
+- Set frontend `VITE_API_URL` when frontend and API are on different domains; leave it unset only when production uses same-origin `/api` routing/proxying.
 
 ## Project Structure (Key Files)
 
