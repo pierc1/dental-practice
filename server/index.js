@@ -252,6 +252,19 @@ const parseDateTimeValue = (value) => {
   return parsed;
 };
 
+const parsePositiveIntParam = (value) => {
+  if (value === undefined || value === null) return null;
+
+  const normalized = String(value).trim();
+  if (!normalized) return null;
+  if (!/^\d+$/.test(normalized)) return Number.NaN;
+
+  const parsed = Number(normalized);
+  if (!Number.isInteger(parsed) || parsed <= 0) return Number.NaN;
+
+  return parsed;
+};
+
 const addDays = (date, days) => {
   const next = new Date(date.getTime());
   next.setDate(next.getDate() + days);
@@ -443,8 +456,13 @@ app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
       filters.push(`a.status = $${values.length}`);
     }
 
-    if (serviceId) {
-      values.push(serviceId);
+    const parsedServiceId = parsePositiveIntParam(serviceId);
+    if (serviceId && Number.isNaN(parsedServiceId)) {
+      return res.status(400).json({ message: "Invalid serviceId." });
+    }
+
+    if (parsedServiceId !== null) {
+      values.push(parsedServiceId);
       filters.push(`a.appointment_type_id = $${values.length}`);
     }
 
@@ -485,6 +503,9 @@ app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
+    if (error?.code === "22P02") {
+      return res.status(400).json({ message: "Invalid numeric filter input." });
+    }
     console.error(error);
     res.status(500).json({ message: "Failed to load appointments." });
   }
@@ -613,9 +634,14 @@ app.delete("/api/blocked-periods/:id", adminRouteRateLimiter, async (req, res) =
   try {
     if (!requireAdminAuth(req, res)) return;
 
+    const parsedBlockedPeriodId = parsePositiveIntParam(req.params.id);
+    if (Number.isNaN(parsedBlockedPeriodId) || parsedBlockedPeriodId === null) {
+      return res.status(400).json({ message: "Invalid blocked period id." });
+    }
+
     const deleteResult = await query(
       "delete from blocked_periods where id = $1 returning id",
-      [req.params.id]
+      [parsedBlockedPeriodId]
     );
 
     if (deleteResult.rowCount === 0) {
@@ -624,6 +650,9 @@ app.delete("/api/blocked-periods/:id", adminRouteRateLimiter, async (req, res) =
 
     res.status(204).send();
   } catch (error) {
+    if (error?.code === "22P02") {
+      return res.status(400).json({ message: "Invalid blocked period id." });
+    }
     console.error(error);
     res.status(500).json({ message: "Failed to delete blocked period." });
   }
@@ -634,6 +663,11 @@ app.get("/api/availability", async (req, res) => {
     const startParam = parseDateParam(req.query.start);
     const endParam = parseDateParam(req.query.end);
     const appointmentTypeIdParam = req.query.appointmentTypeId || req.query.serviceId;
+    const parsedAppointmentTypeId = parsePositiveIntParam(appointmentTypeIdParam);
+
+    if (appointmentTypeIdParam && Number.isNaN(parsedAppointmentTypeId)) {
+      return res.status(400).json({ message: "Invalid appointmentTypeId." });
+    }
 
     const startDate = startParam || new Date();
     startDate.setHours(0, 0, 0, 0);
@@ -646,10 +680,10 @@ app.get("/api/availability", async (req, res) => {
     }
 
     let appointmentDurationMinutes = null;
-    if (appointmentTypeIdParam) {
+    if (parsedAppointmentTypeId !== null) {
       const serviceResult = await query(
         "select duration_minutes from appointment_types where id = $1 and is_active = true",
-        [appointmentTypeIdParam]
+        [parsedAppointmentTypeId]
       );
       if (serviceResult.rowCount === 0) {
         return res.status(400).json({ message: "Invalid appointmentTypeId." });
@@ -780,6 +814,9 @@ app.get("/api/availability", async (req, res) => {
       slots,
     });
   } catch (error) {
+    if (error?.code === "22P02") {
+      return res.status(400).json({ message: "Invalid appointmentTypeId." });
+    }
     console.error(error);
     res.status(500).json({ message: "Failed to generate availability." });
   }
@@ -798,11 +835,16 @@ app.post("/api/appointments", async (req, res) => {
       notes,
     } = req.body || {};
     const resolvedAppointmentTypeId = appointmentTypeId || serviceId;
+    const parsedAppointmentTypeId = parsePositiveIntParam(resolvedAppointmentTypeId);
 
     if (!resolvedAppointmentTypeId || !startTime || !firstName || !lastName) {
       return res.status(400).json({
         message: "appointmentTypeId, startTime, firstName, and lastName are required.",
       });
+    }
+
+    if (Number.isNaN(parsedAppointmentTypeId) || parsedAppointmentTypeId === null) {
+      return res.status(400).json({ message: "Invalid appointmentTypeId." });
     }
 
     if (!contactEmail || !contactPhone) {
@@ -829,7 +871,7 @@ app.post("/api/appointments", async (req, res) => {
 
     const serviceResult = await query(
       "select id, name, duration_minutes from appointment_types where id = $1 and is_active = true",
-      [resolvedAppointmentTypeId]
+      [parsedAppointmentTypeId]
     );
 
     if (serviceResult.rowCount === 0) {
@@ -931,7 +973,7 @@ app.post("/api/appointments", async (req, res) => {
         ($1, $2, $3, $4, $5, $6, $7, $8)
        returning id, start_time, end_time`,
       [
-        resolvedAppointmentTypeId,
+        parsedAppointmentTypeId,
         requestedStart.toISOString(),
         requestedEnd.toISOString(),
         firstName,
@@ -1002,6 +1044,9 @@ app.post("/api/appointments", async (req, res) => {
       emailStatus,
     });
   } catch (error) {
+    if (error?.code === "22P02") {
+      return res.status(400).json({ message: "Invalid appointmentTypeId." });
+    }
     if (error?.code === "23505" || error?.code === "23P01") {
       return res.status(409).json({ message: "This time slot is already booked." });
     }

@@ -112,6 +112,27 @@ describe("API: blocked periods", () => {
     expect(response.body.message).toMatch(/not found/i);
   });
 
+  it("returns 400 when deleting with a non-numeric id", async () => {
+    const agent = await loginAgent();
+
+    const response = await agent.delete("/api/blocked-periods/not-a-number");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/invalid blocked period id/i);
+    expect(queryMock).not.toHaveBeenCalled();
+  });
+
+  it("maps DB 22P02 to 400 when deleting blocked periods", async () => {
+    const agent = await loginAgent();
+
+    queryMock.mockRejectedValueOnce({ code: "22P02" });
+
+    const response = await agent.delete("/api/blocked-periods/41");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/invalid blocked period id/i);
+  });
+
   it("creates and deletes blocked periods for an authorized admin", async () => {
     const agent = await loginAgent();
 

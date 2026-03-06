@@ -161,6 +161,29 @@ describe("API: appointment validation + admin list", () => {
     expect(response.body.message).toMatch(/invalid appointmenttypeid/i);
   });
 
+  it("rejects non-numeric appointmentTypeId", async () => {
+    const response = await request(app).post("/api/appointments").send({
+      ...validPayload(),
+      appointmentTypeId: "abc",
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/invalid appointmenttypeid/i);
+    expect(queryMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-numeric legacy serviceId alias", async () => {
+    const payload = validPayload();
+    delete payload.appointmentTypeId;
+    payload.serviceId = "abc";
+
+    const response = await request(app).post("/api/appointments").send(payload);
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/invalid appointmenttypeid/i);
+    expect(queryMock).not.toHaveBeenCalled();
+  });
+
   it("rejects times outside availability windows", async () => {
     const startTime = nextFutureIso({ dayOffset: 4, hour: 12, minute: 0 });
 
@@ -274,5 +297,20 @@ describe("API: appointment validation + admin list", () => {
     expect(normalized).toContain("a.first_name ilike");
 
     expect(values.at(-1)).toBe(500);
+  });
+
+  it("rejects non-numeric serviceId filter on admin list", async () => {
+    const agent = request.agent(app);
+    const loginResponse = await agent
+      .post("/api/admin/login")
+      .send({ password: "unit-test-admin-password" });
+
+    expect(loginResponse.status).toBe(200);
+
+    const response = await agent.get("/api/appointments?serviceId=abc");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/invalid serviceid/i);
+    expect(queryMock).not.toHaveBeenCalled();
   });
 });

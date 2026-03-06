@@ -85,6 +85,26 @@ describe("API: availability", () => {
     expect(response.body.message).toMatch(/invalid appointmenttypeid/i);
   });
 
+  it("rejects non-numeric appointmentTypeId with 400", async () => {
+    const response = await request(app).get(
+      "/api/availability?start=2030-01-01&end=2030-01-03&appointmentTypeId=abc"
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/invalid appointmenttypeid/i);
+    expect(queryMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-numeric legacy serviceId alias with 400", async () => {
+    const response = await request(app).get(
+      "/api/availability?start=2030-01-01&end=2030-01-03&serviceId=abc"
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/invalid appointmenttypeid/i);
+    expect(queryMock).not.toHaveBeenCalled();
+  });
+
   it("excludes slots for closed exceptions", async () => {
     const dateKey = buildDateKeyFromNow(7);
     const dayOfWeek = dayOfWeekForDateKey(dateKey);
