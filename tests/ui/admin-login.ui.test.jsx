@@ -22,7 +22,7 @@ vi.mock("@/api/adminClient", () => ({
 import App from "../../src/App.jsx";
 
 describe("UI: admin login", () => {
-  it("shows validation error for empty password", async () => {
+  it("shows validation error for empty username/password", async () => {
     checkAdminSessionMock.mockRejectedValueOnce(new Error("Unauthorized."));
 
     renderWithAppProviders(<App />, { initialEntries: ["/admin"] });
@@ -30,22 +30,24 @@ describe("UI: admin login", () => {
     const continueButton = await screen.findByRole("button", { name: /continue/i });
     fireEvent.click(continueButton);
 
-    expect(screen.getByText(/please enter the admin password/i)).toBeInTheDocument();
+    expect(screen.getByText(/please enter both admin username and password/i)).toBeInTheDocument();
   });
 
   it("shows API error on invalid login", async () => {
     checkAdminSessionMock.mockRejectedValueOnce(new Error("Unauthorized."));
-    loginAdminMock.mockRejectedValueOnce(new Error("Invalid admin password."));
+    loginAdminMock.mockRejectedValueOnce(new Error("Invalid admin credentials."));
 
     renderWithAppProviders(<App />, { initialEntries: ["/admin"] });
 
-    const input = await screen.findByLabelText(/admin password/i);
-    fireEvent.change(input, { target: { value: "bad-pass" } });
+    const usernameInput = await screen.findByLabelText(/admin username/i);
+    const passwordInput = await screen.findByLabelText(/admin password/i);
+    fireEvent.change(usernameInput, { target: { value: "admin1" } });
+    fireEvent.change(passwordInput, { target: { value: "bad-pass" } });
 
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/invalid admin password/i)).toBeInTheDocument();
+      expect(screen.getByText(/invalid admin credentials/i)).toBeInTheDocument();
     });
   });
 
@@ -58,8 +60,10 @@ describe("UI: admin login", () => {
 
     renderWithAppProviders(<App />, { initialEntries: ["/admin"] });
 
-    const input = await screen.findByLabelText(/admin password/i);
-    fireEvent.change(input, { target: { value: "valid-pass" } });
+    const usernameInput = await screen.findByLabelText(/admin username/i);
+    const passwordInput = await screen.findByLabelText(/admin password/i);
+    fireEvent.change(usernameInput, { target: { value: "admin1" } });
+    fireEvent.change(passwordInput, { target: { value: "valid-pass" } });
 
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 

@@ -10,6 +10,7 @@ import { checkAdminSession, loginAdmin } from "@/api/adminClient";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const [adminUsername, setAdminUsername] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -40,8 +41,8 @@ export default function AdminLogin() {
   }, [navigate]);
 
   const handleSignIn = async () => {
-    if (!adminPassword.trim()) {
-      setAuthError("Please enter the admin password.");
+    if (!adminUsername.trim() || !adminPassword.trim()) {
+      setAuthError("Please enter both admin username and password.");
       return;
     }
 
@@ -49,7 +50,7 @@ export default function AdminLogin() {
     setAuthError("");
 
     try {
-      await loginAdmin(adminPassword.trim());
+      await loginAdmin(adminUsername.trim().toLowerCase(), adminPassword.trim());
       setAdminPassword("");
       navigate("/admin/appointments", { replace: true });
     } catch (error) {
@@ -76,6 +77,17 @@ export default function AdminLogin() {
               <CardTitle className="text-2xl">Admin Access</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
+              <div>
+                <Label htmlFor="admin_username">Admin username</Label>
+                <Input
+                  id="admin_username"
+                  type="text"
+                  value={adminUsername}
+                  onChange={(event) => setAdminUsername(event.target.value)}
+                  placeholder="Enter admin username"
+                  className="mt-2 bg-white border-slate-300 text-black placeholder:text-slate-500"
+                />
+              </div>
               <div>
                 <Label htmlFor="admin_password">Admin password</Label>
                 <Input
@@ -112,4 +124,3 @@ export default function AdminLogin() {
     </div>
   );
 }
-

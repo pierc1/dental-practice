@@ -1,6 +1,7 @@
 /** @vitest-environment node */
 
 import request from "supertest";
+import bcrypt from "bcryptjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { queryMock, sendStaffNotificationMock, sendPatientConfirmationMock } = vi.hoisted(() => ({
@@ -19,8 +20,10 @@ vi.mock("../../server/email.js", () => ({
   sendPatientConfirmation: sendPatientConfirmationMock,
 }));
 
+const TEST_ADMIN_USERNAME = "admin1";
+const TEST_ADMIN_HASH = bcrypt.hashSync("unit-test-admin-password", 10);
+
 process.env.NODE_ENV = "test";
-process.env.ADMIN_PASSWORD = "unit-test-admin-password";
 process.env.ALLOWED_ORIGINS = "http://allowed.test";
 
 const { app } = await import("../../server/index.js");
@@ -28,6 +31,29 @@ const { app } = await import("../../server/index.js");
 describe("API: security middleware", () => {
   beforeEach(() => {
     queryMock.mockReset();
+
+    queryMock.mockImplementation(async (sql, params = []) => {
+      const normalized = String(sql).replace(/\s+/g, " ").toLowerCase();
+      if (normalized.includes("from admin_users")) {
+        const username = String(params[0] || "");
+        if (username === TEST_ADMIN_USERNAME) {
+          return {
+            rowCount: 1,
+            rows: [
+              {
+                id: 1,
+                username: TEST_ADMIN_USERNAME,
+                password_hash: TEST_ADMIN_HASH,
+                role: "admin",
+              },
+            ],
+          };
+        }
+        return { rowCount: 0, rows: [] };
+      }
+
+      throw new Error(`Unhandled SQL in mock: ${normalized}`);
+    });
   });
 
   it("allows configured CORS origin", async () => {
@@ -55,7 +81,7 @@ describe("API: security middleware", () => {
     for (let i = 0; i < 20; i += 1) {
       const response = await request(app)
         .post("/api/admin/login")
-        .send({ password: "wrong-password" });
+        .send({ username: TEST_ADMIN_USERNAME, password: "wrong-password" });
 
       if (response.status === 429) {
         rateLimitedResponse = response;

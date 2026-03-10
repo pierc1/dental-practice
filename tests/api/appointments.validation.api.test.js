@@ -1,6 +1,7 @@
 /** @vitest-environment node */
 
 import request from "supertest";
+import bcrypt from "bcryptjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { queryMock, sendStaffNotificationMock, sendPatientConfirmationMock } = vi.hoisted(() => ({
@@ -20,7 +21,10 @@ vi.mock("../../server/email.js", () => ({
 }));
 
 process.env.NODE_ENV = "test";
-process.env.ADMIN_PASSWORD = "unit-test-admin-password";
+
+const TEST_ADMIN_USERNAME = "admin1";
+const TEST_ADMIN_PASSWORD = "unit-test-admin-password";
+const TEST_ADMIN_HASH = bcrypt.hashSync(TEST_ADMIN_PASSWORD, 10);
 
 const { app } = await import("../../server/index.js");
 
@@ -107,6 +111,29 @@ const validPayload = (startTime = nextFutureIso()) => ({
   contactPhone: "+1 212-555-1234",
   notes: "Edge-case test",
 });
+
+const mockAdminLookupOnce = () => {
+  queryMock.mockImplementationOnce(async (sql, params = []) => {
+    const normalized = String(sql).replace(/\s+/g, " ").toLowerCase();
+    if (
+      normalized.includes("from admin_users") &&
+      String(params[0] || "") === TEST_ADMIN_USERNAME
+    ) {
+      return {
+        rowCount: 1,
+        rows: [
+          {
+            id: 1,
+            username: TEST_ADMIN_USERNAME,
+            password_hash: TEST_ADMIN_HASH,
+            role: "admin",
+          },
+        ],
+      };
+    }
+    throw new Error(`Unhandled SQL in login mock: ${normalized}`);
+  });
+};
 
 describe("API: appointment validation + admin list", () => {
   beforeEach(() => {
@@ -272,11 +299,13 @@ describe("API: appointment validation + admin list", () => {
 
   it("applies admin list filters and caps limit safely", async () => {
     const agent = request.agent(app);
+    mockAdminLookupOnce();
     const loginResponse = await agent
       .post("/api/admin/login")
-      .send({ password: "unit-test-admin-password" });
+      .send({ username: TEST_ADMIN_USERNAME, password: TEST_ADMIN_PASSWORD });
 
     expect(loginResponse.status).toBe(200);
+    queryMock.mockClear();
 
     queryMock.mockResolvedValueOnce({ rowCount: 0, rows: [] });
 
@@ -301,11 +330,13 @@ describe("API: appointment validation + admin list", () => {
 
   it("rejects non-numeric serviceId filter on admin list", async () => {
     const agent = request.agent(app);
+    mockAdminLookupOnce();
     const loginResponse = await agent
       .post("/api/admin/login")
-      .send({ password: "unit-test-admin-password" });
+      .send({ username: TEST_ADMIN_USERNAME, password: TEST_ADMIN_PASSWORD });
 
     expect(loginResponse.status).toBe(200);
+    queryMock.mockClear();
 
     const response = await agent.get("/api/appointments?serviceId=abc");
 

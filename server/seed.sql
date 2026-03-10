@@ -1,3 +1,11 @@
+-- Bootstrap local admin accounts.
+-- Rotate these credentials in deployed environments.
+insert into admin_users (username, password_hash, role, is_active)
+values
+  ('admin1', '$2b$12$zRE8/e4SibmJ7aBKeSS26.5Vi7J../iKt.RP0fSyZpEq38MIGlh.G', 'admin', true),
+  ('admin2', '$2b$12$Dj8eF8KQ/6Fp/BziZBxCxOgGpqxmPh1dNnHrDrfTCxi7XPtQClp8.', 'admin', true)
+on conflict (username) do nothing;
+
 insert into appointment_types (name, duration_minutes, display_order, is_active)
 values
   ('Cleaning', 60, 1, true),

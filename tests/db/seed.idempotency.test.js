@@ -73,4 +73,18 @@ describeDb("DB: seed idempotency", () => {
 
     expect(duplicateResult.rows).toEqual([]);
   });
+
+  it("can run seed twice without duplicating admin usernames", async () => {
+    await queryFn(seedSql);
+    await queryFn(seedSql);
+
+    const duplicateResult = await queryFn(
+      `select username, count(*)::int as count
+       from admin_users
+       group by username
+       having count(*) > 1`
+    );
+
+    expect(duplicateResult.rows).toEqual([]);
+  });
 });

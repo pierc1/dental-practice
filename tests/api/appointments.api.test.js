@@ -21,7 +21,6 @@ vi.mock("../../server/email.js", () => ({
 }));
 
 process.env.NODE_ENV = "test";
-process.env.ADMIN_PASSWORD = "local-test-admin-password";
 
 const { app } = await import("../../server/index.js");
 

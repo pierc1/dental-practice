@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -114,6 +115,7 @@ const ADMIN_SESSION_COOKIE = "admin_session";
 const adminSessionTtlMinutes = Number(process.env.ADMIN_SESSION_TTL_MINUTES) || 30;
 const adminSessionTtlMs = adminSessionTtlMinutes * 60 * 1000;
 const adminSessions = new Map();
+const DUMMY_BCRYPT_HASH = "$2b$12$C6UzMDM.H6dfI/f/IKxGhu6mM8f6nA1Pt9fQfVUN9D8f6fS4Qh7Ge";
 
 const adminCookieOptions = {
   httpOnly: true,
@@ -145,40 +147,41 @@ const parseCookies = (cookieHeader = "") => {
   }, {});
 };
 
-const isAdminConfigured = () =>
-  typeof process.env.ADMIN_PASSWORD === "string" &&
-  process.env.ADMIN_PASSWORD.trim().length > 0;
+const normalizeAdminUsername = (value) => String(value || "").trim().toLowerCase();
 
-const ensureAdminConfigured = (res) => {
-  if (isAdminConfigured()) return true;
-  res.status(500).json({ message: "Admin authentication is not configured." });
-  return false;
-};
+const isAdminRoleAllowed = (role) => role === "admin";
 
-const isAdminPasswordValid = (passwordInput) => {
-  const password = String(passwordInput || "");
-  const expectedPassword = String(process.env.ADMIN_PASSWORD || "");
-  const providedBuffer = Buffer.from(password);
-  const expectedBuffer = Buffer.from(expectedPassword);
+const verifyAdminCredentials = async ({ username, password }) => {
+  if (!username || !password) return null;
 
-  if (!providedBuffer.length || !expectedBuffer.length) {
-    return false;
+  const adminUserResult = await query(
+    `select id, username, password_hash, role
+     from admin_users
+     where username = $1
+       and is_active = true
+     limit 1`,
+    [username]
+  );
+
+  const adminUser = adminUserResult.rows[0] || null;
+  const candidateHash = adminUser?.password_hash || DUMMY_BCRYPT_HASH;
+
+  let passwordMatches = false;
+  try {
+    passwordMatches = await bcrypt.compare(password, candidateHash);
+  } catch {
+    passwordMatches = false;
   }
 
-  if (providedBuffer.length !== expectedBuffer.length) {
-    // Avoid throwing on length mismatch while still running a constant-time compare.
-    const paddedInput = Buffer.alloc(expectedBuffer.length);
-    providedBuffer.copy(
-      paddedInput,
-      0,
-      0,
-      Math.min(providedBuffer.length, expectedBuffer.length)
-    );
-    crypto.timingSafeEqual(paddedInput, expectedBuffer);
-    return false;
+  if (!adminUser || !passwordMatches || !isAdminRoleAllowed(adminUser.role)) {
+    return null;
   }
 
-  return crypto.timingSafeEqual(providedBuffer, expectedBuffer);
+  return {
+    id: adminUser.id,
+    username: adminUser.username,
+    role: adminUser.role,
+  };
 };
 
 const setNoStore = (res) => {
@@ -201,15 +204,20 @@ const clearAdminSession = (res, token) => {
   });
 };
 
-const createAdminSession = (res) => {
+const createAdminSession = (res, user) => {
   const token = crypto.randomBytes(32).toString("hex");
-  adminSessions.set(token, { expiresAt: Date.now() + adminSessionTtlMs });
+  adminSessions.set(token, {
+    expiresAt: Date.now() + adminSessionTtlMs,
+    user: {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    },
+  });
   res.cookie(ADMIN_SESSION_COOKIE, token, adminCookieOptions);
 };
 
 const requireAdminAuth = (req, res) => {
-  if (!ensureAdminConfigured(res)) return false;
-
   const now = Date.now();
   if (adminSessions.size > 2000) {
     cleanupExpiredEntries(adminSessions, now);
@@ -229,6 +237,16 @@ const requireAdminAuth = (req, res) => {
   }
 
   session.expiresAt = now + adminSessionTtlMs;
+  req.adminUser = session.user || null;
+  return true;
+};
+
+const requireAdminAccess = (req, res) => {
+  if (!requireAdminAuth(req, res)) return false;
+  if (!isAdminRoleAllowed(req.adminUser?.role)) {
+    res.status(403).json({ message: "Forbidden." });
+    return false;
+  }
   return true;
 };
 
@@ -305,16 +323,36 @@ app.get("/api/health", (req, res) => {
 app.post("/api/admin/login", adminLoginRateLimiter, async (req, res) => {
   try {
     setNoStore(res);
-    if (!ensureAdminConfigured(res)) return;
+    const username = normalizeAdminUsername(req.body?.username);
+    const password = String(req.body?.password || "");
 
-    if (!isAdminPasswordValid(req.body?.password)) {
-      res.status(401).json({ message: "Invalid admin password." });
+    if (!username || !password) {
+      res.status(400).json({ message: "username and password are required." });
       return;
     }
 
-    createAdminSession(res);
-    res.json({ ok: true, sessionTtlMinutes: adminSessionTtlMinutes });
+    const authenticatedUser = await verifyAdminCredentials({ username, password });
+
+    if (!authenticatedUser) {
+      res.status(401).json({ message: "Invalid admin credentials." });
+      return;
+    }
+
+    createAdminSession(res, authenticatedUser);
+    res.json({
+      ok: true,
+      sessionTtlMinutes: adminSessionTtlMinutes,
+      user: {
+        username: authenticatedUser.username,
+        role: authenticatedUser.role,
+      },
+    });
   } catch (error) {
+    if (error?.code === "42P01") {
+      return res.status(500).json({
+        message: "Admin users table is missing. Apply the latest schema and seed SQL.",
+      });
+    }
     console.error(error);
     res.status(500).json({ message: "Failed to log in." });
   }
@@ -329,8 +367,15 @@ app.post("/api/admin/logout", adminRouteRateLimiter, (req, res) => {
 
 app.get("/api/admin/session", adminRouteRateLimiter, (req, res) => {
   setNoStore(res);
-  if (!requireAdminAuth(req, res)) return;
-  res.json({ authenticated: true, sessionTtlMinutes: adminSessionTtlMinutes });
+  if (!requireAdminAccess(req, res)) return;
+  res.json({
+    authenticated: true,
+    sessionTtlMinutes: adminSessionTtlMinutes,
+    user: {
+      username: req.adminUser.username,
+      role: req.adminUser.role,
+    },
+  });
 });
 
 app.get("/api/services", async (req, res) => {
@@ -431,7 +476,7 @@ app.get("/api/services/catalog", async (req, res) => {
 
 app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
   try {
-    if (!requireAdminAuth(req, res)) return;
+    if (!requireAdminAccess(req, res)) return;
 
     const { q, start, end, status, serviceId, limit } = req.query;
     const filters = [];
@@ -513,7 +558,7 @@ app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
 
 app.get("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
   try {
-    if (!requireAdminAuth(req, res)) return;
+    if (!requireAdminAccess(req, res)) return;
 
     const { start, end, limit } = req.query;
     const filters = [];
@@ -560,7 +605,7 @@ app.get("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
 
 app.post("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
   try {
-    if (!requireAdminAuth(req, res)) return;
+    if (!requireAdminAccess(req, res)) return;
 
     const { startTime, endTime, reason } = req.body || {};
     const blockStart = parseDateTimeValue(startTime);
@@ -632,7 +677,7 @@ app.post("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
 
 app.delete("/api/blocked-periods/:id", adminRouteRateLimiter, async (req, res) => {
   try {
-    if (!requireAdminAuth(req, res)) return;
+    if (!requireAdminAccess(req, res)) return;
 
     const parsedBlockedPeriodId = parsePositiveIntParam(req.params.id);
     if (Number.isNaN(parsedBlockedPeriodId) || parsedBlockedPeriodId === null) {

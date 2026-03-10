@@ -1,5 +1,7 @@
 -- Simple scheduling schema (non-HIPAA)
 
+create extension if not exists pgcrypto;
+
 -- Bookable appointment types (single source of truth)
 create table if not exists appointment_types (
   id bigserial primary key,
@@ -62,6 +64,19 @@ create table if not exists team_members (
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+-- Admin accounts for dashboard authentication
+create table if not exists admin_users (
+  id bigserial primary key,
+  username text not null unique,
+  password_hash text not null,
+  role text not null default 'admin' check (role = 'admin'),
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (username = lower(trim(username))),
+  check (length(username) >= 3)
 );
 
 -- Weekly recurring availability (0=Sunday ... 6=Saturday)
@@ -339,6 +354,9 @@ create index if not exists service_catalog_appointment_type_idx
 create index if not exists team_members_active_order_idx
   on team_members (is_active, display_order, full_name);
 
+create index if not exists admin_users_active_username_idx
+  on admin_users (is_active, username);
+
 create unique index if not exists availability_unique_slot_idx
   on availability (day_of_week, start_time, end_time, slot_length_minutes);
 
@@ -362,6 +380,7 @@ create index if not exists blocked_periods_end_time_idx
 alter table appointment_types enable row level security;
 alter table service_catalog enable row level security;
 alter table team_members enable row level security;
+alter table admin_users enable row level security;
 alter table availability enable row level security;
 alter table exceptions enable row level security;
 alter table appointments enable row level security;

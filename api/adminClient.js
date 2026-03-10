@@ -24,11 +24,11 @@ export const getApiUrl = (path) => `${API_URL}${path}`;
 
 export const checkAdminSession = () => fetchAdminJson(getApiUrl("/api/admin/session"));
 
-export const loginAdmin = (password) =>
+export const loginAdmin = (username, password) =>
   fetchAdminJson(getApiUrl("/api/admin/login"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ username, password }),
   });
 
 export const logoutAdmin = () =>

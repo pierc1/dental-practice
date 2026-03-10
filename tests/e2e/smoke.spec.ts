@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+const adminUsername = process.env.PLAYWRIGHT_ADMIN_USERNAME;
 const adminPassword = process.env.PLAYWRIGHT_ADMIN_PASSWORD;
 const bookingEnabled = process.env.PLAYWRIGHT_BOOKING_ENABLED === "1";
 
@@ -21,9 +22,13 @@ test("home loads and primary CTA navigation works", async ({ page }) => {
 });
 
 test("admin login reaches appointments page", async ({ page }) => {
-  test.skip(!adminPassword, "Set PLAYWRIGHT_ADMIN_PASSWORD to run the admin auth smoke test.");
+  test.skip(
+    !adminUsername || !adminPassword,
+    "Set PLAYWRIGHT_ADMIN_USERNAME and PLAYWRIGHT_ADMIN_PASSWORD to run the admin auth smoke test."
+  );
 
   await page.goto("/admin");
+  await page.getByLabel(/admin username/i).fill(adminUsername as string);
   await page.getByLabel(/admin password/i).fill(adminPassword as string);
   await page.getByRole("button", { name: /continue/i }).click();
 

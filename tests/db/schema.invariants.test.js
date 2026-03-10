@@ -31,13 +31,18 @@ describeDb("DB: schema invariants", () => {
       `select indexname
        from pg_indexes
        where schemaname = 'public'
-         and indexname in ('appointment_types_name_unique_idx', 'availability_unique_slot_idx')`
+         and indexname in (
+           'appointment_types_name_unique_idx',
+           'availability_unique_slot_idx',
+           'admin_users_username_key'
+         )`
     );
 
     const names = new Set(result.rows.map((row) => row.indexname));
 
     expect(names.has("appointment_types_name_unique_idx")).toBe(true);
     expect(names.has("availability_unique_slot_idx")).toBe(true);
+    expect(names.has("admin_users_username_key")).toBe(true);
   });
 
   it("has team member active/display order index", async () => {

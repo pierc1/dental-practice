@@ -87,14 +87,16 @@ Defaults are in `.env.example`.
 |---|---|---|
 | `PORT` | No | API port. Default: `5050` |
 | `VITE_API_URL` | No (local/prod override) | Optional API base URL override in both dev and production; when unset, production falls back to same-origin `/api` |
-| `ADMIN_PASSWORD` | Yes (admin routes) | Password for admin login |
 | `ADMIN_SESSION_TTL_MINUTES` | No | In-memory admin session TTL. Default: `30` |
 | `ALLOWED_ORIGINS` | No (for local defaults) | Comma-separated CORS allowlist |
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DATABASE_URL_RUNTIME` | No | Optional runtime DB role connection string (recommended for least-privilege API access) |
 | `RESEND_API_KEY` | Optional | Enables email sending |
 | `RESEND_FROM` | Optional | Sender email used by Resend |
 | `STAFF_EMAIL` | Optional | Recipient for staff notifications |
 | `DEFAULT_SLOT_MINUTES` | No | Fallback slot duration. Default: `30` |
+| `PLAYWRIGHT_ADMIN_USERNAME` | Optional | Admin username for Playwright smoke auth test |
+| `PLAYWRIGHT_ADMIN_PASSWORD` | Optional | Admin password for Playwright smoke auth test |
 
 ## Database Workflow
 
@@ -117,6 +119,35 @@ You can also use an external PostgreSQL instance (for example Supabase) instead 
 ```bash
 npm run db:migrate
 npm run db:seed
+```
+
+### Admin Users (Supabase-managed)
+
+- Admin login uses `username + password` against `admin_users`.
+- App login endpoints only authenticate existing rows; they do not create admin users.
+- `server/seed.sql` creates two local bootstrap accounts:
+  - `admin1` / `ChangeMe_Admin1_2026!`
+  - `admin2` / `ChangeMe_Admin2_2026!`
+- Change/rotate these immediately in deployed environments.
+
+Add another admin directly in Supabase SQL editor (not through app login):
+
+```sql
+insert into admin_users (username, password_hash, role, is_active)
+values (
+  'admin3',
+  crypt('replace_with_strong_password', gen_salt('bf')),
+  'admin',
+  true
+);
+```
+
+Recommended runtime hardening (Supabase SQL editor):
+
+```sql
+-- Replace app_runtime_role with the DB role used by DATABASE_URL_RUNTIME.
+revoke all on table public.admin_users from public;
+grant select on table public.admin_users to app_runtime_role;
 ```
 
 ## Scripts
@@ -152,7 +183,7 @@ Public:
 - `POST /api/appointments`
 
 Admin (cookie-authenticated):
-- `POST /api/admin/login`
+- `POST /api/admin/login` (`{ username, password }`)
 - `POST /api/admin/logout`
 - `GET /api/admin/session`
 - `GET /api/appointments`
@@ -177,15 +208,16 @@ Resend integration is optional for local review.
 
 - `DATABASE_URL is not set`: copy `.env.example` to `.env` and verify `DATABASE_URL`.
 - `Origin not allowed by CORS`: add your frontend origin to `ALLOWED_ORIGINS`.
-- Admin routes return `Unauthorized`: log in first via `POST /api/admin/login`, and ensure `ADMIN_PASSWORD` is set.
+- Admin routes return `Unauthorized`: log in first via `POST /api/admin/login` using a valid `admin_users.username` and password.
 - Port conflicts: change `PORT` (API) or Vite port settings if needed.
 
 ## Deployment Security Checklist
 
 - Set `NODE_ENV=production` for deployed API environments.
-- Use a strong `ADMIN_PASSWORD` (long, unique, not reused).
+- Use strong unique passwords for all rows in `admin_users` and rotate seeded defaults before go-live.
 - Restrict `ALLOWED_ORIGINS` to exact trusted frontend domains only.
 - Set frontend `VITE_API_URL` when frontend and API are on different domains; leave it unset only when production uses same-origin `/api` routing/proxying.
+- Prefer `DATABASE_URL_RUNTIME` with least-privilege DB permissions for API runtime.
 
 ## Project Structure (Key Files)
 
