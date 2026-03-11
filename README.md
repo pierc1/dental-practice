@@ -89,6 +89,7 @@ Defaults are in `.env.example`.
 | `VITE_API_URL` | No (local/prod override) | Optional API base URL override in both dev and production; when unset, production falls back to same-origin `/api` |
 | `ADMIN_SESSION_TTL_MINUTES` | No | In-memory admin session TTL. Default: `30` |
 | `ALLOWED_ORIGINS` | No (for local defaults) | Comma-separated CORS allowlist |
+| `TRUST_PROXY` | No | Proxy trust setting for `req.ip`-based protections. `true`/`1` trusts one reverse proxy hop (recommended for hosted demos behind one proxy). `false`/`0`/unset disables trust (safe local default). |
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `DATABASE_URL_RUNTIME` | No | Optional runtime DB role connection string (recommended for least-privilege API access) |
 | `RESEND_API_KEY` | Optional | Enables email sending |
@@ -121,14 +122,15 @@ npm run db:migrate
 npm run db:seed
 ```
 
-### Admin Users (Supabase-managed)
+### Admin Users and Demo Credentials (Intentional)
 
 - Admin login uses `username + password` against `admin_users`.
 - App login endpoints only authenticate existing rows; they do not create admin users.
+- For portfolio reviewer convenience, demo credentials are intentionally documented and use non-sensitive sample data.
 - `server/seed.sql` creates two local bootstrap accounts:
   - `admin1` / `ChangeMe_Admin1_2026!`
   - `admin2` / `ChangeMe_Admin2_2026!`
-- Change/rotate these immediately in deployed environments.
+- Keep these for demo workflows; rotate them if you repurpose this project beyond demo use.
 
 Add another admin directly in Supabase SQL editor (not through app login):
 
@@ -216,8 +218,15 @@ Resend integration is optional for local review.
 - Set `NODE_ENV=production` for deployed API environments.
 - Use strong unique passwords for all rows in `admin_users` and rotate seeded defaults before go-live.
 - Restrict `ALLOWED_ORIGINS` to exact trusted frontend domains only.
+- Set `TRUST_PROXY=1` only when the API is behind a single trusted reverse proxy; leave unset/`0` for local development or direct exposure.
 - Set frontend `VITE_API_URL` when frontend and API are on different domains; leave it unset only when production uses same-origin `/api` routing/proxying.
 - Prefer `DATABASE_URL_RUNTIME` with least-privilege DB permissions for API runtime.
+
+## If This Were Production
+
+- Move admin sessions from in-memory storage to a shared store (for example Redis) to support restarts and horizontal scaling.
+- Add dedicated CSRF defenses for cookie-authenticated mutating admin routes.
+- Add stronger admin controls such as MFA and structured auth audit logs.
 
 ## Project Structure (Key Files)
 

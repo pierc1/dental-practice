@@ -181,5 +181,6 @@ describe("API smoke: appointments", () => {
 
     expect(response.status).toBe(401);
     expect(response.body.message).toMatch(/unauthorized/i);
+    expect(response.headers["cache-control"]).toBe("no-store");
   });
 });

@@ -38,12 +38,26 @@ const corsOptions = {
   credentials: true,
 };
 
+const parseTrustProxySetting = () => {
+  const normalized = String(process.env.TRUST_PROXY || "").trim().toLowerCase();
+
+  if (normalized === "1" || normalized === "true") {
+    return 1;
+  }
+
+  if (!normalized || normalized === "0" || normalized === "false") {
+    return false;
+  }
+
+  return false;
+};
+
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());
-app.set("trust proxy", 1);
+app.set("trust proxy", parseTrustProxySetting());
 
 app.use((error, req, res, next) => {
   if (error?.message === "CORS_NOT_ALLOWED") {
@@ -476,6 +490,7 @@ app.get("/api/services/catalog", async (req, res) => {
 
 app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
   try {
+    setNoStore(res);
     if (!requireAdminAccess(req, res)) return;
 
     const { q, start, end, status, serviceId, limit } = req.query;
@@ -558,6 +573,7 @@ app.get("/api/appointments", adminRouteRateLimiter, async (req, res) => {
 
 app.get("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
   try {
+    setNoStore(res);
     if (!requireAdminAccess(req, res)) return;
 
     const { start, end, limit } = req.query;
@@ -605,6 +621,7 @@ app.get("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
 
 app.post("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
   try {
+    setNoStore(res);
     if (!requireAdminAccess(req, res)) return;
 
     const { startTime, endTime, reason } = req.body || {};
@@ -677,6 +694,7 @@ app.post("/api/blocked-periods", adminRouteRateLimiter, async (req, res) => {
 
 app.delete("/api/blocked-periods/:id", adminRouteRateLimiter, async (req, res) => {
   try {
+    setNoStore(res);
     if (!requireAdminAccess(req, res)) return;
 
     const parsedBlockedPeriodId = parsePositiveIntParam(req.params.id);

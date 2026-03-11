@@ -295,6 +295,7 @@ describe("API: appointment validation + admin list", () => {
 
     expect(response.status).toBe(401);
     expect(response.body.message).toMatch(/unauthorized/i);
+    expect(response.headers["cache-control"]).toBe("no-store");
   });
 
   it("applies admin list filters and caps limit safely", async () => {
@@ -315,6 +316,7 @@ describe("API: appointment validation + admin list", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([]);
+    expect(response.headers["cache-control"]).toBe("no-store");
 
     const [sql, values] = queryMock.mock.calls[0];
     const normalized = normalizeSql(sql);

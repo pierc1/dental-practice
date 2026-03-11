@@ -71,12 +71,15 @@ describe("API: blocked periods", () => {
   it("rejects unauthorized GET/POST/DELETE", async () => {
     const getResponse = await request(app).get("/api/blocked-periods");
     expect(getResponse.status).toBe(401);
+    expect(getResponse.headers["cache-control"]).toBe("no-store");
 
     const postResponse = await request(app).post("/api/blocked-periods").send({});
     expect(postResponse.status).toBe(401);
+    expect(postResponse.headers["cache-control"]).toBe("no-store");
 
     const deleteResponse = await request(app).delete("/api/blocked-periods/1");
     expect(deleteResponse.status).toBe(401);
+    expect(deleteResponse.headers["cache-control"]).toBe("no-store");
   });
 
   it("rejects missing or invalid blocked period payload", async () => {
@@ -85,6 +88,7 @@ describe("API: blocked periods", () => {
     const missingValues = await agent.post("/api/blocked-periods").send({});
     expect(missingValues.status).toBe(400);
     expect(missingValues.body.message).toMatch(/required/i);
+    expect(missingValues.headers["cache-control"]).toBe("no-store");
 
     const invertedRange = await agent.post("/api/blocked-periods").send({
       startTime: "2030-01-10T14:00:00.000Z",
@@ -92,6 +96,7 @@ describe("API: blocked periods", () => {
     });
     expect(invertedRange.status).toBe(400);
     expect(invertedRange.body.message).toMatch(/after/i);
+    expect(invertedRange.headers["cache-control"]).toBe("no-store");
   });
 
   it("returns 409 when range conflicts with an existing appointment", async () => {
@@ -107,6 +112,7 @@ describe("API: blocked periods", () => {
 
     expect(response.status).toBe(409);
     expect(response.body.message).toMatch(/appointment already exists/i);
+    expect(response.headers["cache-control"]).toBe("no-store");
   });
 
   it("returns 409 when range conflicts with an existing blocked period", async () => {
@@ -124,6 +130,7 @@ describe("API: blocked periods", () => {
 
     expect(response.status).toBe(409);
     expect(response.body.message).toMatch(/already blocked/i);
+    expect(response.headers["cache-control"]).toBe("no-store");
   });
 
   it("returns 404 when deleting a missing blocked period", async () => {
@@ -135,6 +142,7 @@ describe("API: blocked periods", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.message).toMatch(/not found/i);
+    expect(response.headers["cache-control"]).toBe("no-store");
   });
 
   it("returns 400 when deleting with a non-numeric id", async () => {
@@ -145,6 +153,7 @@ describe("API: blocked periods", () => {
     expect(response.status).toBe(400);
     expect(response.body.message).toMatch(/invalid blocked period id/i);
     expect(queryMock).not.toHaveBeenCalled();
+    expect(response.headers["cache-control"]).toBe("no-store");
   });
 
   it("maps DB 22P02 to 400 when deleting blocked periods", async () => {
@@ -156,6 +165,7 @@ describe("API: blocked periods", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.message).toMatch(/invalid blocked period id/i);
+    expect(response.headers["cache-control"]).toBe("no-store");
   });
 
   it("creates and deletes blocked periods for an authorized admin", async () => {
@@ -186,9 +196,11 @@ describe("API: blocked periods", () => {
 
     expect(createResponse.status).toBe(201);
     expect(createResponse.body.id).toBe(41);
+    expect(createResponse.headers["cache-control"]).toBe("no-store");
 
     const deleteResponse = await agent.delete("/api/blocked-periods/41");
 
     expect(deleteResponse.status).toBe(204);
+    expect(deleteResponse.headers["cache-control"]).toBe("no-store");
   });
 });
