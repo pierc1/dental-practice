@@ -178,7 +178,6 @@ grant select on table public.admin_users to app_runtime_role;
 Public:
 - `GET /api/health`
 - `GET /api/services`
-- `GET /api/team-members`
 - `GET /api/appointment-types`
 - `GET /api/services/catalog`
 - `GET /api/availability`

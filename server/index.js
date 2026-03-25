@@ -404,32 +404,6 @@ app.get("/api/services", async (req, res) => {
   }
 });
 
-app.get("/api/team-members", async (req, res) => {
-  try {
-    const result = await query(
-      `select
-        id,
-        full_name,
-        title,
-        specialty,
-        bio,
-        photo_url,
-        education,
-        years_experience,
-        available_days,
-        available_hours
-      from team_members
-      where is_active = true
-      order by display_order asc, full_name asc`
-    );
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to load team members." });
-  }
-});
-
 app.get("/api/appointment-types", async (req, res) => {
   try {
     const result = await query(

@@ -34,7 +34,6 @@ describeDb("DB smoke test", () => {
       select
         to_regclass('public.appointment_types') as appointment_types,
         to_regclass('public.admin_users') as admin_users,
-        to_regclass('public.team_members') as team_members,
         to_regclass('public.availability') as availability,
         to_regclass('public.appointments') as appointments,
         to_regclass('public.blocked_periods') as blocked_periods
@@ -42,7 +41,6 @@ describeDb("DB smoke test", () => {
 
     expect(tables.rows[0].appointment_types).toBeTruthy();
     expect(tables.rows[0].admin_users).toBeTruthy();
-    expect(tables.rows[0].team_members).toBeTruthy();
     expect(tables.rows[0].availability).toBeTruthy();
     expect(tables.rows[0].appointments).toBeTruthy();
     expect(tables.rows[0].blocked_periods).toBeTruthy();

@@ -30,7 +30,6 @@ describeDb("DB: RLS hardening", () => {
     const tableNames = [
       "appointment_types",
       "admin_users",
-      "team_members",
       "availability",
       "exceptions",
       "appointments",

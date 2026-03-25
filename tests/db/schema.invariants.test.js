@@ -45,17 +45,6 @@ describeDb("DB: schema invariants", () => {
     expect(names.has("admin_users_username_key")).toBe(true);
   });
 
-  it("has team member active/display order index", async () => {
-    const result = await queryFn(
-      `select indexname
-       from pg_indexes
-       where schemaname = 'public'
-         and indexname = 'team_members_active_order_idx'`
-    );
-
-    expect(result.rows).toHaveLength(1);
-  });
-
   it("has overlap exclusion constraints for appointments and blocked periods", async () => {
     const result = await queryFn(
       `select conname, pg_get_constraintdef(oid) as definition

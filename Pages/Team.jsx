@@ -1,11 +1,9 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { fetchPublicJson, getPublicApiUrl } from "@/api/publicClient";
+import teamMembers from "@/data/dentists.json";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import CtaSection from "@/components/CtaSection";
 import { CONTACT_INFO, PRIMARY_CTA_ROUTE_ID } from "@/config/siteConfig";
@@ -18,11 +16,6 @@ import {
 import { motion } from "framer-motion";
 
 export default function Team() {
-  const { data: teamMembers = [], isLoading } = useQuery({
-    queryKey: ["team-members"],
-    queryFn: () => fetchPublicJson(getPublicApiUrl("/api/team-members")),
-  });
-
   const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
 
   return (
@@ -55,20 +48,7 @@ export default function Team() {
       {/* Team Members */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {isLoading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="border border-white/10 bg-white/5 shadow-lg">
-                  <Skeleton className="h-80 w-full" />
-                  <CardContent className="p-6">
-                    <Skeleton className="h-6 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-1/2 mb-4" />
-                    <Skeleton className="h-20 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : teamMembers.length === 0 ? (
+          {teamMembers.length === 0 ? (
             <div className="text-center py-20">
               <div className="w-20 h-20 bg-white/10 border border-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Award className="w-10 h-10 text-cyan-200" />
@@ -100,6 +80,8 @@ export default function Team() {
                           src={dentist.photo_url}
                           alt={dentist.full_name}
                           className="w-full h-full object-cover"
+                          loading={index === 0 ? "eager" : "lazy"}
+                          decoding="async"
                           style={{
                             objectPosition:
                               dentist.id === 'd1'
@@ -107,7 +89,7 @@ export default function Team() {
                                 : dentist.id === 'd2'
                                   ? 'center 39%'
                                 : dentist.id === 'd3'
-                                  ? 'center 74%'
+                                  ? 'center 20%'
                                   : 'center 40%',
                           }}
                         />

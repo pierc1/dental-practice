@@ -48,24 +48,6 @@ create table if not exists service_catalog (
   created_at timestamptz not null default now()
 );
 
--- Public team directory profiles
-create table if not exists team_members (
-  id text primary key,
-  full_name text not null,
-  title text,
-  specialty text not null,
-  bio text,
-  photo_url text,
-  education text,
-  years_experience integer check (years_experience >= 0),
-  available_days text[] not null default '{}',
-  available_hours text,
-  display_order integer not null default 0,
-  is_active boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
 -- Admin accounts for dashboard authentication
 create table if not exists admin_users (
   id bigserial primary key,
@@ -351,9 +333,6 @@ create index if not exists service_catalog_active_order_idx
 create index if not exists service_catalog_appointment_type_idx
   on service_catalog (appointment_type_id);
 
-create index if not exists team_members_active_order_idx
-  on team_members (is_active, display_order, full_name);
-
 create index if not exists admin_users_active_username_idx
   on admin_users (is_active, username);
 
@@ -379,12 +358,13 @@ create index if not exists blocked_periods_end_time_idx
 -- This project uses a backend API as the data access layer, so we do not add anon/authenticated policies here.
 alter table appointment_types enable row level security;
 alter table service_catalog enable row level security;
-alter table team_members enable row level security;
 alter table admin_users enable row level security;
 alter table availability enable row level security;
 alter table exceptions enable row level security;
 alter table appointments enable row level security;
 alter table blocked_periods enable row level security;
+
+drop table if exists team_members;
 
 do $$
 begin
