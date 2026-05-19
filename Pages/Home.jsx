@@ -32,7 +32,7 @@ export default function Home() {
   const appointmentUrl = createPageUrl(PRIMARY_CTA_ROUTE_ID);
   const serviceImageFallback =
     "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&q=80";
-  const heroPhoto = "/Woman Smiling.jpg";
+  const heroPhoto = "/hero-smiling-woman.png";
 
 
   const trustPoints = [
@@ -74,8 +74,8 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black opacity-90" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-40 md:pt-52 pb-0">
-          <div className="grid lg:grid-cols-[0.9fr_1.1fr] md:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="relative z-10 space-y-7 pb-16 md:pb-24">
+          <div className="relative">
+            <div className="relative z-10 space-y-7 max-w-[760px] pb-16 md:pb-24">
               <div className="text-sm uppercase tracking-[0.28em] text-cyan-200 font-semibold">
                 NYC Smiles
               </div>
@@ -125,12 +125,16 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex justify-end px-4 sm:px-6 lg:px-8">
-            <div className="hidden md:block w-full max-w-[200px] md:max-w-[300px] lg:max-w-[475px] -translate-x-4 md:-translate-x-6 lg:-translate-x-10">
+        </div>
+
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0">
+          <div className="max-w-7xl mx-auto flex justify-end px-4 sm:px-6 lg:px-8">
+            <div className="hidden md:block relative w-full max-w-[220px] translate-y-[8%] -translate-x-4 md:max-w-[325px] md:-translate-x-6 lg:max-w-[505px] lg:-translate-x-10">
+              <div className="absolute left-1/2 bottom-[-18%] -z-10 aspect-square w-[128%] -translate-x-1/2 rounded-full bg-cyan-600" />
               <img
                 src={heroPhoto}
                 alt="Modern dental studio"
-                className="w-full h-auto object-contain"
+                className="relative z-10 block w-full h-auto object-contain"
               />
             </div>
           </div>
